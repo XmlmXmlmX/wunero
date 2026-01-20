@@ -1,18 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireAuth, unauthorizedResponse, forbiddenResponse } from '@/lib/api-auth';
 import type { Wishlist, UpdateWishlistInput } from '@/types';
 
-// GET /api/wishlists/[id] - Get a specific wishlist
-export async function GET(
+// DELETE /api/wishlists/[id] - Delete a wishlist (only owner can delete)
+export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuth();
+    if (!userId) {
+      return unauthorizedResponse();
+    }
+    
     const { id } = await params;
     const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as Wishlist | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+    
+    if (wishlist.user_id !== userId) {
+      return forbiddenResponse();
     }
     
     return NextResponse.json(wishlist);

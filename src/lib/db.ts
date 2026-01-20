@@ -19,6 +19,7 @@ db.pragma('foreign_keys = ON');
 db.exec(`
   CREATE TABLE IF NOT EXISTS wishlists (
     id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
     title TEXT NOT NULL,
     description TEXT,
     created_at INTEGER NOT NULL,
@@ -41,6 +42,13 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_wish_items_wishlist_id ON wish_items(wishlist_id);
+  CREATE INDEX IF NOT EXISTS idx_wishlists_user_id ON wishlists(user_id);
 `);
+
+// Migrate existing wishlists to add user_id if not present
+const checkColumn = db.prepare("PRAGMA table_info(wishlists)").all() as Array<{ name: string }>;
+if (!checkColumn.find(col => col.name === "user_id")) {
+  db.exec(`ALTER TABLE wishlists ADD COLUMN user_id TEXT NOT NULL DEFAULT 'anonymous';`);
+}
 
 export default db;

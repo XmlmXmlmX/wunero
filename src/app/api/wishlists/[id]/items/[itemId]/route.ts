@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { extractProductInfo } from '@/lib/productParser';
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 import type { WishItem, UpdateWishItemInput } from '@/types';
 
 // GET /api/wishlists/[id]/items/[itemId] - Get a specific item
@@ -23,7 +24,7 @@ export async function GET(
   }
 }
 
-// PATCH /api/wishlists/[id]/items/[itemId] - Update an item
+// PATCH /api/wishlists/[id]/items/[itemId] - Update an item (require auth for marking purchased)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string }> }
@@ -31,6 +32,14 @@ export async function PATCH(
   try {
     const { itemId } = await params;
     const body: UpdateWishItemInput = await request.json();
+    
+    // If trying to mark as purchased, require authentication
+    if (body.purchased !== undefined) {
+      const userId = await requireAuth();
+      if (!userId) {
+        return unauthorizedResponse();
+      }
+    }
     
     const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId);
     
