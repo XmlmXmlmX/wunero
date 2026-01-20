@@ -1,0 +1,14 @@
+services:
+  wunero:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - wunero-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DB_PATH=/app/data
+    restart: unless-stopped
+
+volumes:
+  wunero-data:
