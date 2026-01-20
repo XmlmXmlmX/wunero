@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
-import { WuButton } from "./WuButton/WuButton";
+import { WuButton } from "@/components/atoms";
 
 export function WuAuthButton() {
   const { data: session } = useSession();

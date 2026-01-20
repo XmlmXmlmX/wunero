@@ -6,6 +6,24 @@
 .logo {
   margin: 0 auto 2rem;
   display: block;
+  border-radius: 20px;
+  padding: 3px;
+  background: linear-gradient(45deg, #3a7afe, #B480AD, #8b5cf6, #3a7afe);
+  background-size: 300% 300%;
+  animation: rotateBorder 4s linear infinite;
+  position: relative;
+}
+
+@keyframes rotateBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .badge {
