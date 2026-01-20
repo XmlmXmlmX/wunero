@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { use } from 'react';
+import { sanitizeUrl, isValidImageUrl } from '@/lib/urlUtils';
 import type { Wishlist, WishItem } from '@/types';
 
 export default function WishlistDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -273,9 +274,9 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                     {item.price && (
                       <p className="text-lg font-semibold text-indigo-600 mb-2">{item.price}</p>
                     )}
-                    {item.url && (
+                    {item.url && sanitizeUrl(item.url) && (
                       <a
-                        href={item.url}
+                        href={sanitizeUrl(item.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-indigo-600 hover:text-indigo-800 text-sm inline-block mb-2"
@@ -283,7 +284,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                         🔗 View Product
                       </a>
                     )}
-                    {item.image_url && (
+                    {item.image_url && isValidImageUrl(item.image_url) && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.image_url}

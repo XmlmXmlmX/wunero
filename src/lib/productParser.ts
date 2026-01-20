@@ -6,15 +6,79 @@ export interface ProductInfo {
   price?: string;
 }
 
+// Rate limiting to prevent abuse
+const rateLimitMap = new Map<string, number>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute in milliseconds
+
+/**
+ * Validate and sanitize URL
+ */
+function validateUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    const protocol = urlObj.protocol;
+    
+    // Only allow HTTP and HTTPS
+    if (protocol !== 'http:' && protocol !== 'https:') {
+      return false;
+    }
+    
+    // Block localhost and private IPs to prevent SSRF
+    const hostname = urlObj.hostname.toLowerCase();
+    if (
+      hostname === 'localhost' ||
+      hostname.startsWith('127.') ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('172.16.') ||
+      hostname === '[::1]'
+    ) {
+      return false;
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check rate limit for URL fetching
+ */
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const lastRequest = rateLimitMap.get(key) || 0;
+  
+  if (now - lastRequest < RATE_LIMIT_WINDOW) {
+    return false;
+  }
+  
+  rateLimitMap.set(key, now);
+  return true;
+}
+
 /**
  * Extract product information from a URL
  */
 export async function extractProductInfo(url: string): Promise<ProductInfo> {
   try {
+    // Validate URL
+    if (!validateUrl(url)) {
+      console.warn('Invalid or unsafe URL:', url);
+      return {};
+    }
+    
+    // Check rate limit
+    if (!checkRateLimit('product-fetch')) {
+      console.warn('Rate limit exceeded for product fetching');
+      return {};
+    }
+    
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
       },
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
 
     if (!response.ok) {
