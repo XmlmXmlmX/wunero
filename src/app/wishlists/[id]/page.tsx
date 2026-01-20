@@ -19,6 +19,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     loadWishlist();
     loadItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadWishlist = async () => {
@@ -283,6 +284,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                       </a>
                     )}
                     {item.image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.image_url}
                         alt={item.title}

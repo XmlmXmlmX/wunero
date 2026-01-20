@@ -49,7 +49,7 @@ export async function POST(
     const now = Date.now();
     
     // Extract product info from URL if provided
-    let productInfo = { title: undefined, image_url: undefined, price: undefined };
+    let productInfo: { title?: string; image_url?: string; price?: string } = {};
     if (body.url) {
       productInfo = await extractProductInfo(body.url);
     }

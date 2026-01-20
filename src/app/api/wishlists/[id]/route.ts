@@ -38,7 +38,7 @@ export async function PATCH(
     }
     
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number)[] = [];
     
     if (body.title !== undefined) {
       updates.push('title = ?');
