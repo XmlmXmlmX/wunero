@@ -1,0 +1,36 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=sqlite
+    ports:
+      - "8080:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+    command: start-dev
+    restart: unless-stopped
+
+  wunero:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - wunero-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DB_PATH=/app/data
+      - NEXTAUTH_SECRET=your-super-secret-key-change-this-in-production
+      - NEXTAUTH_URL=http://localhost:3000
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=master
+      - KEYCLOAK_CLIENT_ID=wunero
+      - KEYCLOAK_CLIENT_SECRET=your-client-secret
+    depends_on:
+      - keycloak
+    restart: unless-stopped
+
+volumes:
+  wunero-data:
+  keycloak-data:

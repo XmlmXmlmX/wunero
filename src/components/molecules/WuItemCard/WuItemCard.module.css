@@ -1,0 +1,71 @@
+.card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(17, 24, 39, 0.12);
+}
+
+.purchased {
+  opacity: 0.65;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.titlePurchased {
+  text-decoration: line-through;
+}
+
+.badge {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badgeSuccess {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.description {
+  margin: 0 0 0.75rem;
+  color: #4b5563;
+}
+
+.price {
+  margin: 0 0 0.75rem;
+  color: #4f46e5;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.image {
+  margin-top: 0.75rem;
+  max-width: 240px;
+  border-radius: 0.75rem;
+}

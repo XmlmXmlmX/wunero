@@ -1,0 +1,69 @@
+.wrapper {
+  text-align: center;
+  padding: 4rem 1rem 2rem;
+}
+
+.logo {
+  margin: 0 auto 2rem;
+  display: block;
+  border-radius: 20px;
+  padding: 3px;
+  background: linear-gradient(45deg, #3a7afe, #B480AD, #8b5cf6, #3a7afe);
+  background-size: 300% 300%;
+  animation: rotateBorder 4s linear infinite;
+  position: relative;
+}
+
+@keyframes rotateBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: #eef2ff;
+  color: #4338ca;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  margin: 0 0 0.75rem;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0 auto 1.25rem;
+  color: #4b5563;
+  max-width: 36rem;
+  font-size: 1.1rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2.25rem;
+  }
+}

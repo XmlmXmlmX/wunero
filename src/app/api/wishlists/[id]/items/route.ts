@@ -1,0 +1,83 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { nanoid } from 'nanoid';
+import db from '@/lib/db';
+import { extractProductInfo } from '@/lib/productParser';
+import type { WishItem, CreateWishItemInput } from '@/types';
+
+// GET /api/wishlists/[id]/items - Get all items in a wishlist
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    
+    // Check if wishlist exists
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    if (!wishlist) {
+      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+    
+    const items = db.prepare('SELECT * FROM wish_items WHERE wishlist_id = ? ORDER BY priority DESC, created_at DESC').all(id) as WishItem[];
+    return NextResponse.json(items);
+  } catch (error) {
+    console.error('Error fetching wish items:', error);
+    return NextResponse.json({ error: 'Failed to fetch wish items' }, { status: 500 });
+  }
+}
+
+// POST /api/wishlists/[id]/items - Add a new item to wishlist
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body: CreateWishItemInput = await request.json();
+    
+    // Check if wishlist exists
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    if (!wishlist) {
+      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+    
+    if (!body.title || body.title.trim() === '') {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+
+    const itemId = nanoid();
+    const now = Date.now();
+    
+    // Extract product info from URL if provided
+    let productInfo: { title?: string; image_url?: string; price?: string } = {};
+    if (body.url) {
+      productInfo = await extractProductInfo(body.url);
+    }
+    
+    const stmt = db.prepare(`
+      INSERT INTO wish_items (id, wishlist_id, title, description, url, image_url, price, priority, purchased, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(
+      itemId,
+      id,
+      body.title,
+      body.description || null,
+      body.url || null,
+      productInfo.image_url || null,
+      productInfo.price || null,
+      body.priority || 0,
+      0,
+      now,
+      now
+    );
+    
+    const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as WishItem;
+    
+    return NextResponse.json(item, { status: 201 });
+  } catch (error) {
+    console.error('Error creating wish item:', error);
+    return NextResponse.json({ error: 'Failed to create wish item' }, { status: 500 });
+  }
+}
