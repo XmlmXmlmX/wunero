@@ -1,4 +1,21 @@
-# 🎁 Wunero
+<p align="center">
+    <img src="src/app/logo.svg" alt="Wunero Logo" width="220" />
+</p>
+<p align="center">Joy starts with a wish.</p>
+<p align="center">
+    <a href="https://github.com/XmlmXmlmX/wunero/actions">
+        <img src="https://github.com/XmlmXmlmX/wunero/workflows/CI/badge.svg" alt="CI Status" />
+    </a>
+    <a href="https://github.com/XmlmXmlmX/wunero/issues">
+        <img src="https://img.shields.io/github/issues/XmlmXmlmX/wunero" alt="Issues" />
+    </a>
+    <a href="https://github.com/XmlmXmlmX/wunero/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/XmlmXmlmX/wunero" alt="License" />
+    </a>
+    <img src="https://img.shields.io/badge/status-experimental-orange" alt="Project Status" />
+</p>
+
+---
 
 Wunero is an open, lightweight wishlist app designed to collect, organize, and share wishes with others. The project is fully open source and welcomes contributions, extensions, and experimentation.
 

@@ -1,0 +1,10 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eef2ff 0%, #ffffff 45%, #e0f2fe 100%);
+}
+
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 0 3rem;
+}
