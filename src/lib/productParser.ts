@@ -76,10 +76,18 @@ function validateUrl(url: string): boolean {
       hostname.startsWith('127.') ||
       hostname.startsWith('192.168.') ||
       hostname.startsWith('10.') ||
-      hostname.startsWith('172.16.') ||
       hostname === '[::1]'
     ) {
       return false;
+    }
+    
+    // Check for 172.16.0.0/12 range (172.16.0.0 - 172.31.255.255)
+    const ip172Match = hostname.match(/^172\.(\d+)\./);
+    if (ip172Match) {
+      const secondOctet = parseInt(ip172Match[1], 10);
+      if (secondOctet >= 16 && secondOctet <= 31) {
+        return false;
+      }
     }
     
     return true;
@@ -261,7 +269,7 @@ export function getShopName(url: string): string {
     const hostname = urlObj.hostname.toLowerCase();
     
     // Remove www. prefix
-    let domain = hostname.replace(/^www\./, '');
+    const domain = hostname.replace(/^www\./, '');
     
     // Extract the main domain name
     const parts = domain.split('.');

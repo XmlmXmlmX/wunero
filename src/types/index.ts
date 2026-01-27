@@ -23,7 +23,7 @@ export interface WishItem {
   url?: string;
   image_url?: string;
   price?: string;
-  currency: Currency;
+  currency?: Currency;
   priority: number;
   quantity: number;
   importance: WishItemImportance;

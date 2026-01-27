@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import styles from "./WuBadge.module.css";
 import { type WuAtom } from "@/types/WuAtom";
 
-interface WuBadgeProps extends WuAtom<HTMLSpanElement> {
+export interface WuBadgeProps extends WuAtom<HTMLSpanElement> {
   children: ReactNode;
   variant?: "default" | "primary" | "danger";
 }
