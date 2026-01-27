@@ -6,6 +6,8 @@ export interface ProductInfo {
   image_url?: string;
   price?: string;
   currency?: Currency;
+  timedOut?: boolean;
+  blocked?: boolean; 
 }
 
 /**
@@ -218,7 +220,14 @@ export async function extractProductInfo(url: string): Promise<ProductInfo> {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
       const hostname = new URL(url).hostname;
       console.warn(`Product fetch timed out for ${hostname} - likely bot protection`);
-      return { timedOut: true, blocked: true };
+      return { 
+        title: undefined,
+        image_url: undefined,
+        price: undefined,
+        currency: undefined,
+        timedOut: true,
+        blocked: true 
+      };
     }
 
     console.error('Error extracting product info:', error);
