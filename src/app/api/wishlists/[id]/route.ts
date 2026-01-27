@@ -21,14 +21,14 @@ export async function GET(
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
       WHERE w.id = ?
       GROUP BY w.id
-    `).get(id) as Wishlist | undefined;
+    `).get(id) as { user_id: number; is_private: number; [key: string]: any } | undefined;
 
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
     // Check if user is owner or is following the wishlist
-    const isOwner = wishlist.user_id === userId;
+    const isOwner = wishlist.user_id.toString() === userId;
     const isFollowing = db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
       .get(userId, id);
 
@@ -60,13 +60,13 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as Wishlist | undefined;
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
 
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
-    if (wishlist.user_id !== userId) {
+    if (wishlist.user_id.toString() !== userId) {
       return forbiddenResponse();
     }
 
@@ -93,13 +93,13 @@ export async function PATCH(
     const { id } = await params;
     const body: UpdateWishlistInput = await request.json();
     
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
-    if (wishlist.user_id !== userId) {
+    if (wishlist.user_id.toString() !== userId) {
       return forbiddenResponse();
     }
     

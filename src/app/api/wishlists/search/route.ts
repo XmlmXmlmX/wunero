@@ -44,14 +44,14 @@ export async function GET(request: NextRequest) {
       FROM wishlists w
       LEFT JOIN users u ON w.user_id = u.id
       WHERE w.id = ?
-    `).get(wishlistId) as Wishlist & { owner_email?: string; owner_name?: string } | undefined;
+    `).get(wishlistId) as { user_id: number; is_private: number; owner_email?: string; owner_name?: string; [key: string]: any } | undefined;
 
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
     // Check if user is the owner
-    const isOwner = wishlist.user_id === userId;
+    const isOwner = wishlist.user_id.toString() === userId;
 
     // If wishlist is private and user is not the owner, deny access
     if (wishlist.is_private && !isOwner) {

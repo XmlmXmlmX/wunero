@@ -42,12 +42,12 @@ export async function POST(
     const body: CreateWishItemInput = await request.json();
     
     // Check if wishlist exists and user is owner
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
-    if (wishlist.user_id !== userId) {
+    if (wishlist.user_id.toString() !== userId) {
       return forbiddenResponse();
     }
     
