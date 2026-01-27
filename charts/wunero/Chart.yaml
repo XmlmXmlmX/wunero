@@ -1,0 +1,19 @@
+apiVersion: v2
+name: wunero
+description: A shared wishlist application for collaborative gift planning
+type: application
+version: 0.1.1
+appVersion: 0.1.1
+keywords:
+  - wishlist
+  - collaborative
+  - sharing
+  - gifts
+home: https://github.com/XmlmXmlmX/wunero
+sources:
+  - https://github.com/XmlmXmlmX/wunero
+maintainers:
+  - name: Sebastian Hösl
+    email: sebastian.hoesl@outlook.de
+    url: https://github.com/XmlmXmlmX
+icon: https://raw.githubusercontent.com/XmlmXmlmX/wunero/main/public/icon.png

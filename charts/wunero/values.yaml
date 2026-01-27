@@ -1,0 +1,91 @@
+# Wunero Helm Chart Values
+
+replicaCount: 1
+
+image:
+  repository: xmlmxmlmx/wunero
+  pullPolicy: IfNotPresent
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: wunero.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Wunero specific configuration
+wunero:
+  database:
+    # Use persistent volume for SQLite database
+    storageClass: ""  # Use default storage class
+    size: 1Gi
+    path: /app/data
+
+  # NextAuth configuration
+  nextauth:
+    # Generate a secure secret: openssl rand -base64 32
+    secret: ""  # REQUIRED - must be set
+    url: ""  # REQUIRED - set to your domain: https://wunero.example.com
+
+  # Email configuration (Resend)
+  email:
+    enabled: false
+    apiKey: ""  # Set your Resend API key
+
+  # Application settings
+  nodeEnv: production
+  port: 3000
