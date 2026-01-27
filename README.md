@@ -3,9 +3,7 @@
 </p>
 <p align="center">Joy starts with a wish.</p>
 <p align="center">
-    <a href="https://github.com/XmlmXmlmX/wunero/actions">
-        <img src="https://github.com/XmlmXmlmX/wunero/workflows/CI/badge.svg" alt="CI Status" />
-    </a>
+    [![Build and Push to Docker Hub](https://github.com/XmlmXmlmX/wunero/actions/workflows/docker-build.yml/badge.svg)](https://github.com/XmlmXmlmX/wunero/actions/workflows/docker-build.yml)
     <a href="https://github.com/XmlmXmlmX/wunero/issues">
         <img src="https://img.shields.io/github/issues/XmlmXmlmX/wunero" alt="Issues" />
     </a>

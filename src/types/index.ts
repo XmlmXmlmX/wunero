@@ -1,10 +1,18 @@
+export type WishItemImportance = 'must-have' | 'would-love' | 'nice-to-have' | 'not-sure';
+export type Currency = 'EUR' | 'GBP' | 'USD';
+
 export interface Wishlist {
   id: string;
   user_id: string;
   title: string;
   description?: string;
+  is_private: number;
+  items_count: number;
   created_at: number;
   updated_at: number;
+  followed_at?: number;
+  owner_email?: string;
+  owner_name?: string;
 }
 
 export interface WishItem {
@@ -15,8 +23,12 @@ export interface WishItem {
   url?: string;
   image_url?: string;
   price?: string;
+  currency?: Currency;
   priority: number;
+  quantity: number;
+  importance: WishItemImportance;
   purchased: number;
+  purchased_quantity: number;
   created_at: number;
   updated_at: number;
 }
@@ -24,11 +36,13 @@ export interface WishItem {
 export interface CreateWishlistInput {
   title: string;
   description?: string;
+  is_private?: boolean;
 }
 
 export interface UpdateWishlistInput {
   title?: string;
   description?: string;
+  is_private?: boolean;
 }
 
 export interface CreateWishItemInput {
@@ -36,6 +50,10 @@ export interface CreateWishItemInput {
   description?: string;
   url?: string;
   priority?: number;
+  quantity?: number;
+  importance?: WishItemImportance;
+  price?: string;
+  currency?: Currency;
 }
 
 export interface UpdateWishItemInput {
@@ -44,6 +62,10 @@ export interface UpdateWishItemInput {
   url?: string;
   image_url?: string;
   price?: string;
+  currency?: Currency;
   priority?: number;
+  quantity?: number;
+  importance?: WishItemImportance;
   purchased?: boolean;
+  purchased_quantity?: number;
 }

@@ -18,6 +18,12 @@
   text-decoration: none;
 }
 
+.backLink svg {
+  height: 1em;
+  width: 1em;
+  align-self: center;
+}
+
 .backLink:hover {
   color: #312e81;
 }

@@ -30,21 +30,67 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
   try {
+    const { id } = await params;
     const { itemId } = await params;
     const body: UpdateWishItemInput = await request.json();
     
-    // If trying to mark as purchased, require authentication
-    if (body.purchased !== undefined) {
-      const userId = await requireAuth();
-      if (!userId) {
-        return unauthorizedResponse();
-      }
-    }
-    
+    // Get the item
     const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId);
     
     if (!item) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+    
+    // Get the wishlist
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    
+    if (!wishlist) {
+      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+    
+    // Check if user is authenticated
+    const userId = await requireAuth();
+    if (!userId) {
+      return unauthorizedResponse();
+    }
+    
+    // Check if user is the owner
+    const isOwner = wishlist.user_id === userId;
+    
+    // Only owner can edit item details, anyone can mark as purchased (if wishlist is public)
+    if (body.purchased !== undefined && !isOwner) {
+      // Check if wishlist is private - if so, only owner can mark as purchased
+      if (wishlist.is_private) {
+        return NextResponse.json({ error: 'Cannot mark items as purchased in private wishlists' }, { status: 403 });
+      }
+      // For public wishlists, allow marking as purchased
+      const updates: string[] = [];
+      const values: (string | number)[] = [];
+      
+      if (body.purchased !== undefined) {
+        updates.push('purchased = ?');
+        values.push(body.purchased ? 1 : 0);
+      }
+      
+      if (body.purchased_quantity !== undefined) {
+        updates.push('purchased_quantity = ?');
+        values.push(body.purchased_quantity);
+      }
+      
+      updates.push('updated_at = ?');
+      values.push(Date.now());
+      values.push(itemId);
+      
+      const stmt = db.prepare(`UPDATE wish_items SET ${updates.join(', ')} WHERE id = ?`);
+      stmt.run(...values);
+      
+      const updated = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as WishItem;
+      return NextResponse.json(updated);
+    }
+    
+    // Only owner can edit other fields
+    if (!isOwner) {
+      return NextResponse.json({ error: 'Only the owner can edit this item' }, { status: 403 });
     }
     
     const updates: string[] = [];
@@ -88,14 +134,34 @@ export async function PATCH(
       values.push(body.price);
     }
     
+    if (body.currency !== undefined) {
+      updates.push('currency = ?');
+      values.push(body.currency);
+    }
+    
     if (body.priority !== undefined) {
       updates.push('priority = ?');
       values.push(body.priority);
     }
     
+    if (body.quantity !== undefined) {
+      updates.push('quantity = ?');
+      values.push(body.quantity);
+    }
+    
+    if (body.importance !== undefined) {
+      updates.push('importance = ?');
+      values.push(body.importance);
+    }
+    
     if (body.purchased !== undefined) {
       updates.push('purchased = ?');
       values.push(body.purchased ? 1 : 0);
+    }
+    
+    if (body.purchased_quantity !== undefined) {
+      updates.push('purchased_quantity = ?');
+      values.push(body.purchased_quantity);
     }
     
     updates.push('updated_at = ?');
@@ -114,17 +180,37 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/wishlists/[id]/items/[itemId] - Delete an item
+// DELETE /api/wishlists/[id]/items/[itemId] - Delete an item (only owner)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
   try {
-    const { itemId } = await params;
+    const { id, itemId } = await params;
+    
+    // Require authentication
+    const userId = await requireAuth();
+    if (!userId) {
+      return unauthorizedResponse();
+    }
+    
+    // Get the item
     const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId);
     
     if (!item) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+    
+    // Get the wishlist
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    
+    if (!wishlist) {
+      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+    
+    // Only the owner can delete items
+    if (wishlist.user_id !== userId) {
+      return NextResponse.json({ error: 'Only the owner can delete items' }, { status: 403 });
     }
     
     db.prepare('DELETE FROM wish_items WHERE id = ?').run(itemId);

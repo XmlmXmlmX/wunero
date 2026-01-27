@@ -1,6 +1,6 @@
-.page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #eef2ff 0%, #ffffff 45%, #e0f2fe 100%);
+:global(body) {
+  background: radial-gradient(100vh circle at 50% 30%, #141733, #070812 60%, #05050a);
+  height: 100vh;
 }
 
 .main {

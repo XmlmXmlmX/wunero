@@ -13,6 +13,17 @@
   margin-bottom: 1rem;
 }
 
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -27,4 +38,14 @@
   background-color: #f9fafb;
   color: #4b5563;
   font-size: 1.1rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.formWrapper {
+  margin-bottom: 2rem;
 }
