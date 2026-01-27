@@ -6,13 +6,16 @@ import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
 import { WuWishlistCard } from "@/components/molecules/WuWishlistCard/WuWishlistCard";
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
 import { WuWishlistForm } from "@/components/organisms/WuWishlistForm/WuWishlistForm";
+import { WuFollowWishlistForm } from "@/components/organisms/WuFollowWishlistForm/WuFollowWishlistForm";
 import type { Wishlist } from "@/types";
 import styles from "./page.module.css";
 
 export default function WishlistsPage() {
-  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
+  const [ownWishlists, setOwnWishlists] = useState<Wishlist[]>([]);
+  const [followedWishlists, setFollowedWishlists] = useState<Wishlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [showFollowForm, setShowFollowForm] = useState(false);
 
   useEffect(() => {
     loadWishlists();
@@ -21,10 +24,19 @@ export default function WishlistsPage() {
   const loadWishlists = async () => {
     try {
       const response = await fetch("/api/wishlists");
+      if (!response.ok) {
+        console.error(`Error: ${response.status}`);
+        setOwnWishlists([]);
+        setFollowedWishlists([]);
+        return;
+      }
       const data = await response.json();
-      setWishlists(data);
+      setOwnWishlists(Array.isArray(data.own) ? data.own : []);
+      setFollowedWishlists(Array.isArray(data.followed) ? data.followed : []);
     } catch (error) {
       console.error("Error loading wishlists:", error);
+      setOwnWishlists([]);
+      setFollowedWishlists([]);
     } finally {
       setLoading(false);
     }
@@ -63,6 +75,22 @@ export default function WishlistsPage() {
     }
   };
 
+  const unfollowWishlist = async (id: string) => {
+    if (!confirm("Are you sure you want to unfollow this wishlist?")) return;
+
+    try {
+      const response = await fetch(`/api/wishlists/follow?wishlistId=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        loadWishlists();
+      }
+    } catch (error) {
+      console.error("Error unfollowing wishlist:", error);
+    }
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
@@ -76,24 +104,51 @@ export default function WishlistsPage() {
             backHref="/"
             backLabel="Back to Home"
             actions={
-              <WuButton
-                type="button"
-                variant={showNewForm ? "outline" : "primary"}
-                onClick={() => setShowNewForm(!showNewForm)}
-              >
-                {showNewForm ? "Cancel" : "+ New Wishlist"}
-              </WuButton>
+              <div className={styles.headerActions}>
+                <WuButton
+                  type="button"
+                  variant={showFollowForm ? "outline" : "ghost"}
+                  onClick={() => {
+                    setShowFollowForm(!showFollowForm);
+                    setShowNewForm(false);
+                  }}
+                >
+                  {showFollowForm ? "Cancel" : "+ Follow"}
+                </WuButton>
+                <WuButton
+                  type="button"
+                  variant={showNewForm ? "outline" : "primary"}
+                  onClick={() => {
+                    setShowNewForm(!showNewForm);
+                    setShowFollowForm(false);
+                  }}
+                >
+                  {showNewForm ? "Cancel" : "+ New Wishlist"}
+                </WuButton>
+              </div>
             }
           />
         </div>
 
         {showNewForm && (
-          <div style={{ marginBottom: "2rem" }}>
+          <div className={styles.formWrapper}>
             <WuWishlistForm onSubmit={handleCreateWishlist} onCancel={() => setShowNewForm(false)} />
           </div>
         )}
 
-        {wishlists.length === 0 ? (
+        {showFollowForm && (
+          <div className={styles.formWrapper}>
+            <WuFollowWishlistForm 
+              onSuccess={() => {
+                setShowFollowForm(false);
+                loadWishlists();
+              }} 
+              onCancel={() => setShowFollowForm(false)} 
+            />
+          </div>
+        )}
+
+        {ownWishlists.length === 0 && followedWishlists.length === 0 ? (
           <WuEmptyState
             icon="📝"
             title="No wishlists yet"
@@ -105,11 +160,34 @@ export default function WishlistsPage() {
             }
           />
         ) : (
-          <div className={styles.grid}>
-            {wishlists.map((wishlist) => (
-              <WuWishlistCard key={wishlist.id} wishlist={wishlist} onDelete={deleteWishlist} />
-            ))}
-          </div>
+          <>
+            {ownWishlists.length > 0 && (
+              <div className={styles.section}>
+                <h2 className={styles.sectionTitle}>My Wishlists</h2>
+                <div className={styles.grid}>
+                  {ownWishlists.map((wishlist) => (
+                    <WuWishlistCard key={wishlist.id} wishlist={wishlist} onDelete={deleteWishlist} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {followedWishlists.length > 0 && (
+              <div className={styles.section}>
+                <h2 className={styles.sectionTitle}>Following</h2>
+                <div className={styles.grid}>
+                  {followedWishlists.map((wishlist) => (
+                    <WuWishlistCard 
+                      key={wishlist.id} 
+                      wishlist={wishlist} 
+                      onDelete={unfollowWishlist}
+                      isFollowed
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

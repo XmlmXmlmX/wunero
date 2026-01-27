@@ -1,17 +1,19 @@
-.control {
-  border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
-  padding: 0.8rem 1rem;
+.wu-input {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
   font-size: 1rem;
   color: #111827;
   background-color: #ffffff;
   outline: none;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.control:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+.wu-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .error {
@@ -23,7 +25,9 @@
   width: 100%;
 }
 
-.textarea {
-  min-height: 120px;
-  resize: vertical;
+.wu-label {
+  font-size: 0.9rem;
+  color: #444;
+  display: block;
+  margin-bottom: 0.25rem;
 }

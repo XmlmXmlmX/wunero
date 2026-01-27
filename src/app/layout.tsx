@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth-provider";
+import { WuNavbar } from "@/components/organisms/WuNavbar/WuNavbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,8 +15,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      </head>
       <body className="antialiased">
         <AuthProvider>
+          <WuNavbar />
           {children}
         </AuthProvider>
       </body>

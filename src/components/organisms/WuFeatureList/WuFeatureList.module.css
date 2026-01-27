@@ -18,7 +18,21 @@
 }
 
 .icon {
-  font-size: 2rem;
+  width: 5rem;
+  height: 5rem;
+  justify-self: center; 
+}
+
+.card:nth-child(1) .icon {
+  color: #6366f1;
+}
+
+.card:nth-child(2) .icon {
+  color: #bd63f1;
+}
+
+.card:nth-child(3) .icon {
+  color: #641d94;
 }
 
 .title {

@@ -7,7 +7,7 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         <WuHeroSection />
-        <WuFeatureList />
+        <WuFeatureList id="features" />
       </main>
     </div>
   );

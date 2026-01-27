@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { WuButton, WuInput, WuTextArea } from "@/components/atoms";
+import { WuButton, WuInput, WuTextArea, WuCheckbox } from "@/components/atoms";
 import { type WuOrganism } from "@/types/WuOrganism";
 import styles from "./WuWishlistForm.module.css";
 
-interface WuWishlistFormProps extends WuOrganism<HTMLDivElement> {
-  onSubmit: (payload: { title: string; description?: string }) => Promise<void> | void;
+interface WuWishlistFormProps extends Omit<WuOrganism<HTMLDivElement>, 'onSubmit'> {
+  onSubmit: (payload: { title: string; description?: string; is_private?: boolean }) => Promise<void> | void;
   onCancel?: () => void;
   submitLabel?: string;
 }
@@ -12,6 +12,7 @@ interface WuWishlistFormProps extends WuOrganism<HTMLDivElement> {
 export function WuWishlistForm({ onSubmit, onCancel, submitLabel = "Create Wishlist", className, ...rest }: WuWishlistFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -20,9 +21,14 @@ export function WuWishlistForm({ onSubmit, onCancel, submitLabel = "Create Wishl
 
     setSubmitting(true);
     try {
-      await onSubmit({ title: title.trim(), description: description.trim() || undefined });
+      await onSubmit({ 
+        title: title.trim(), 
+        description: description.trim() || undefined,
+        is_private: isPrivate
+      });
       setTitle("");
       setDescription("");
+      setIsPrivate(false);
     } finally {
       setSubmitting(false);
     }
@@ -55,6 +61,14 @@ export function WuWishlistForm({ onSubmit, onCancel, submitLabel = "Create Wishl
             onChange={(event) => setDescription(event.target.value)}
             rows={3}
             fullWidth
+          />
+        </div>
+        <div className={styles.checkboxField}>
+          <WuCheckbox
+            id="is-private"
+            checked={isPrivate}
+            onChange={(checked, _event) => setIsPrivate(checked)}
+            label="Private - Only you can see this wishlist"
           />
         </div>
         <div className={styles.actions}>

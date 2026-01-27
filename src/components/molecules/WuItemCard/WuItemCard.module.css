@@ -4,6 +4,7 @@
   padding: 1.25rem;
   box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
   transition: box-shadow 150ms ease, transform 150ms ease;
+  counter-increment: itemsList; 
 }
 
 .card:hover {
@@ -15,11 +16,32 @@
   opacity: 0.65;
 }
 
+.contentWrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mainContent > p {
+  margin-bottom: 0;
+}
+
+.imageSection {
+  flex-shrink: 0;
+}
+
 .header {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
 }
 
 .title {
@@ -27,10 +49,50 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .titlePurchased {
   text-decoration: line-through;
+}
+
+.badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reorderButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reorderButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.reorderButton:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.reorderButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .badge {
@@ -62,10 +124,43 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: end;
 }
 
 .image {
-  margin-top: 0.75rem;
-  max-width: 240px;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
   border-radius: 0.75rem;
+  border: .5rem solid white;
+  box-shadow: 0 0 1px gray;
+}
+
+.imagePlaceholder {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  font-size: 3rem;
+}
+
+.card::before {
+  position: absolute;
+  content: counter(itemsList);
+  font-size: 0.75rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+  background-color: #ffffff;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  transform: translate(-2rem, -2rem);
 }

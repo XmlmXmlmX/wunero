@@ -1,9 +1,53 @@
 import * as cheerio from 'cheerio';
+import type { Currency } from '@/types';
 
 export interface ProductInfo {
   title?: string;
   image_url?: string;
   price?: string;
+  currency?: Currency;
+}
+
+/**
+ * Extract price and currency from a price string
+ */
+function extractPriceAndCurrency(priceText: string): { price?: string; currency?: Currency } {
+  if (!priceText) return {};
+  
+  // Remove whitespace and normalize
+  const normalized = priceText.trim().replace(/\s+/g, ' ');
+  
+  // Detect currency symbol
+  let currency: Currency | undefined;
+  if (normalized.includes('€') || normalized.includes('EUR')) {
+    currency = 'EUR';
+  } else if (normalized.includes('£') || normalized.includes('GBP')) {
+    currency = 'GBP';
+  } else if (normalized.includes('$') || normalized.includes('USD')) {
+    currency = 'USD';
+  }
+  
+  // Extract numeric price (remove currency symbols and letters)
+  const price = normalized.replace(/[€£$A-Za-z]/g, '').trim();
+  
+  return {
+    price: price || undefined,
+    currency,
+  };
+}
+
+/**
+ * Detect currency from currency code string
+ */
+function detectCurrency(currencyCode?: string): Currency | undefined {
+  if (!currencyCode) return undefined;
+  
+  const code = currencyCode.toUpperCase();
+  if (code === 'EUR' || code === 'EURO') return 'EUR';
+  if (code === 'GBP' || code === 'POUND') return 'GBP';
+  if (code === 'USD' || code === 'DOLLAR') return 'USD';
+  
+  return undefined;
 }
 
 // Rate limiting to prevent abuse
@@ -74,23 +118,31 @@ export async function extractProductInfo(url: string): Promise<ProductInfo> {
       return {};
     }
     
+    console.log(`Starting fetch for: ${url}`);
+    const startTime = Date.now();
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
       },
-      signal: AbortSignal.timeout(10000), // 10 second timeout
+      // 8s timeout - some sites have bot protection and won't respond
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!response.ok) {
+      console.warn(`Failed to fetch URL: ${response.status} ${response.statusText}`);
       return {};
     }
 
     const html = await response.text();
+    const fetchTime = Date.now() - startTime;
+    console.log(`Fetched HTML in ${fetchTime}ms: ${html.length} bytes, status: ${response.status}`);
     const $ = cheerio.load(html);
 
     let title: string | undefined;
     let image_url: string | undefined;
     let price: string | undefined;
+    let currency: Currency | undefined;
 
     // Amazon selectors
     if (url.includes('amazon.')) {
@@ -98,8 +150,11 @@ export async function extractProductInfo(url: string): Promise<ProductInfo> {
               $('h1.product-title').text().trim();
       image_url = $('#landingImage').attr('src') || 
                   $('.imgTagWrapper img').attr('src');
-      price = $('.a-price .a-offscreen').first().text().trim() || 
+      const priceText = $('.a-price .a-offscreen').first().text().trim() || 
               $('#priceblock_ourprice').text().trim();
+      const parsedPrice = extractPriceAndCurrency(priceText);
+      price = parsedPrice.price;
+      currency = parsedPrice.currency;
     }
     // eBay selectors
     else if (url.includes('ebay.')) {
@@ -107,15 +162,39 @@ export async function extractProductInfo(url: string): Promise<ProductInfo> {
               $('#itemTitle').text().trim();
       image_url = $('.ux-image-carousel-item img').first().attr('src') || 
                   $('#icImg').attr('src');
-      price = $('.x-price-primary').first().text().trim() || 
+      const priceText = $('.x-price-primary').first().text().trim() || 
               $('#prcIsum').text().trim();
+      const parsedPrice = extractPriceAndCurrency(priceText);
+      price = parsedPrice.price;
+      currency = parsedPrice.currency;
     }
     // Idealo selectors
     else if (url.includes('idealo.')) {
       title = $('h1[data-test="product-title"]').text().trim() || 
               $('.oopStage-mainContent-title').text().trim();
       image_url = $('.oopStage-mainContent-mainImage img').attr('src');
-      price = $('.oopStage-mainContent-priceSection-price').text().trim();
+      const priceText = $('.oopStage-mainContent-priceSection-price').text().trim();
+      const parsedPrice = extractPriceAndCurrency(priceText);
+      price = parsedPrice.price;
+      currency = parsedPrice.currency;
+      
+      // Idealo often uses JavaScript rendering, fallback to Open Graph meta tags
+      if (!title) {
+        title = $('meta[property="og:title"]').attr('content') || 
+                $('title').text().trim();
+        console.log('Idealo: Using Open Graph fallback for title');
+      }
+      if (!image_url) {
+        image_url = $('meta[property="og:image"]').attr('content');
+      }
+      if (!price) {
+        const metaPrice = $('meta[property="product:price:amount"]').attr('content');
+        const metaCurrency = $('meta[property="product:price:currency"]').attr('content');
+        price = metaPrice;
+        currency = detectCurrency(metaCurrency);
+      }
+      
+      console.log('Idealo extracted:', { title: !!title, image_url: !!image_url, price: !!price, currency });
     }
     // Generic Open Graph fallback
     else {
@@ -123,15 +202,25 @@ export async function extractProductInfo(url: string): Promise<ProductInfo> {
               $('title').text().trim();
       image_url = $('meta[property="og:image"]').attr('content') || 
                   $('img').first().attr('src');
-      price = $('meta[property="og:price:amount"]').attr('content');
+      const metaPrice = $('meta[property="og:price:amount"]').attr('content');
+      const metaCurrency = $('meta[property="og:price:currency"]').attr('content');
+      price = metaPrice;
+      currency = detectCurrency(metaCurrency);
     }
 
     return {
       title: title || undefined,
       image_url: image_url || undefined,
       price: price || undefined,
+      currency: currency || undefined,
     };
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      const hostname = new URL(url).hostname;
+      console.warn(`Product fetch timed out for ${hostname} - likely bot protection`);
+      return { timedOut: true, blocked: true };
+    }
+
     console.error('Error extracting product info:', error);
     return {};
   }
@@ -152,5 +241,53 @@ export function isSupportedPlatform(url: string): boolean {
     );
   } catch {
     return false;
+  }
+}
+/**
+ * Extract shop name from URL
+ */
+export function getShopName(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    
+    // Remove www. prefix
+    let domain = hostname.replace(/^www\./, '');
+    
+    // Extract the main domain name
+    const parts = domain.split('.');
+    
+    // Special cases for known shops
+    if (domain.includes('amazon.')) {
+      return 'Amazon';
+    }
+    if (domain.includes('ebay.')) {
+      return 'eBay';
+    }
+    if (domain.includes('idealo.')) {
+      return 'idealo';
+    }
+    if (domain.includes('etsy.')) {
+      return 'Etsy';
+    }
+    if (domain.includes('aliexpress.')) {
+      return 'AliExpress';
+    }
+    if (domain.includes('alibaba.')) {
+      return 'Alibaba';
+    }
+    if (domain.includes('wish.')) {
+      return 'Wish';
+    }
+    if (domain.includes('shopify.')) {
+      const shop = parts[0];
+      return shop.charAt(0).toUpperCase() + shop.slice(1);
+    }
+    
+    // Generic: take first part before TLD
+    const shopName = parts[0];
+    return shopName.charAt(0).toUpperCase() + shopName.slice(1);
+  } catch {
+    return 'Product';
   }
 }

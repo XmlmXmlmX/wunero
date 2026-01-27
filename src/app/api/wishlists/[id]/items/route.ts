@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import db from '@/lib/db';
 import { extractProductInfo } from '@/lib/productParser';
+import { requireAuth, unauthorizedResponse, forbiddenResponse } from '@/lib/api-auth';
 import type { WishItem, CreateWishItemInput } from '@/types';
 
 // GET /api/wishlists/[id]/items - Get all items in a wishlist
@@ -26,19 +27,28 @@ export async function GET(
   }
 }
 
-// POST /api/wishlists/[id]/items - Add a new item to wishlist
+// POST /api/wishlists/[id]/items - Add a new item to wishlist (only owner can add items)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userId = await requireAuth();
+    if (!userId) {
+      return unauthorizedResponse();
+    }
+
     const { id } = await params;
     const body: CreateWishItemInput = await request.json();
     
-    // Check if wishlist exists
+    // Check if wishlist exists and user is owner
     const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+
+    if (wishlist.user_id !== userId) {
+      return forbiddenResponse();
     }
     
     if (!body.title || body.title.trim() === '') {
@@ -49,14 +59,14 @@ export async function POST(
     const now = Date.now();
     
     // Extract product info from URL if provided
-    let productInfo: { title?: string; image_url?: string; price?: string } = {};
+    let productInfo: { title?: string; image_url?: string; price?: string; currency?: string } = {};
     if (body.url) {
       productInfo = await extractProductInfo(body.url);
     }
     
     const stmt = db.prepare(`
-      INSERT INTO wish_items (id, wishlist_id, title, description, url, image_url, price, priority, purchased, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO wish_items (id, wishlist_id, title, description, url, image_url, price, currency, priority, quantity, importance, purchased, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
     stmt.run(
@@ -66,8 +76,11 @@ export async function POST(
       body.description || null,
       body.url || null,
       productInfo.image_url || null,
-      productInfo.price || null,
+      body.price || productInfo.price || null,
+      body.currency || productInfo.currency || 'EUR',
       body.priority || 0,
+      body.quantity || 1,
+      body.importance || 'would-love',
       0,
       now,
       now

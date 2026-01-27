@@ -11,8 +11,33 @@ export async function GET() {
     if (!userId) {
       return unauthorizedResponse();
     }
-    const wishlists = db.prepare('SELECT * FROM wishlists WHERE user_id = ? ORDER BY updated_at DESC').all(userId) as Wishlist[];
-    return NextResponse.json(wishlists);
+    
+    // Get user's own wishlists with item count
+    const ownWishlists = db.prepare(`
+      SELECT w.*, COUNT(wi.id) as items_count
+      FROM wishlists w
+      LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
+      WHERE w.user_id = ?
+      GROUP BY w.id
+      ORDER BY w.updated_at DESC
+    `).all(userId) as Wishlist[];
+    
+    // Get followed wishlists with owner info and item count
+    const followedWishlists = db.prepare(`
+      SELECT w.*, fw.created_at as followed_at, u.email as owner_email, u.name as owner_name, COUNT(wi.id) as items_count
+      FROM followed_wishlists fw
+      JOIN wishlists w ON fw.wishlist_id = w.id
+      LEFT JOIN users u ON w.user_id = u.id
+      LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
+      WHERE fw.user_id = ?
+      GROUP BY w.id
+      ORDER BY fw.created_at DESC
+    `).all(userId) as Array<Wishlist & { followed_at: number; owner_email?: string; owner_name?: string }>;
+    
+    return NextResponse.json({
+      own: ownWishlists,
+      followed: followedWishlists
+    });
   } catch (error) {
     console.error('Error fetching wishlists:', error);
     return NextResponse.json({ error: 'Failed to fetch wishlists' }, { status: 500 });
@@ -36,11 +61,11 @@ export async function POST(request: NextRequest) {
     const now = Date.now();
     
     const stmt = db.prepare(`
-      INSERT INTO wishlists (id, user_id, title, description, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO wishlists (id, user_id, title, description, is_private, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     
-    stmt.run(id, userId, body.title, body.description || null, now, now);
+    stmt.run(id, userId, body.title, body.description || null, body.is_private ? 1 : 0, now, now);
     
     const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as Wishlist;
     
