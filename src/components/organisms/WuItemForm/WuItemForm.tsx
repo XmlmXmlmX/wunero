@@ -33,16 +33,16 @@ interface WuItemFormProps extends Omit<WuOrganism<HTMLDivElement>, 'onSubmit'> {
   isEditMode?: boolean;
 }
 
-export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = false, className, ...rest }: WuItemFormProps) {
-  interface ParsedProductData {
-    title?: string;
-    price?: string;
-    currency?: Currency;
-    image_url?: string;
-    blocked?: boolean;
-    timedOut?: boolean;
-  }
+interface ParsedProductData {
+  title?: string;
+  price?: string;
+  currency?: Currency;
+  image_url?: string;
+  blocked?: boolean;
+  timedOut?: boolean;
+}
 
+export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = false, className, ...rest }: WuItemFormProps) {
   const [url, setUrl] = useState(initialValues?.url || "");
   const [title, setTitle] = useState(initialValues?.title || "");
   const [description, setDescription] = useState(initialValues?.description || "");

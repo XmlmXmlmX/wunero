@@ -341,13 +341,11 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
           {isEditMode ? (
             <div className={styles.editForm}>
               <WuInput
-                label="Title"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 placeholder="Wishlist title"
               />
               <WuTextArea
-                label="Description"
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 placeholder="Wishlist description"

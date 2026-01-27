@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { WuButton } from "@/components/atoms/WuButton/WuButton";
 import styles from "./page.module.css";
+import { WuButtonLink } from "@/components/atoms";
 
 function ErrorContent() {
   const searchParams = useSearchParams();
@@ -32,12 +33,12 @@ function ErrorContent() {
         </div>
 
         <div className={styles.actions}>
-          <WuButton href="/auth/signin">
+          <WuButtonLink href="/auth/signin">
             Try Again
-          </WuButton>
-          <WuButton href="/" variant="outline">
+          </WuButtonLink>
+          <WuButtonLink href="/" variant="outline">
             Back to Home
-          </WuButton>
+          </WuButtonLink>
         </div>
       </div>
     </div>
