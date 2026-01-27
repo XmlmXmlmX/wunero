@@ -42,7 +42,7 @@ export async function PATCH(
     }
     
     // Get the wishlist
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number; is_private: number } | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
@@ -55,7 +55,7 @@ export async function PATCH(
     }
     
     // Check if user is the owner
-    const isOwner = wishlist.user_id === userId;
+    const isOwner = wishlist.user_id.toString() === userId;
     
     // Only owner can edit item details, anyone can mark as purchased (if wishlist is public)
     if (body.purchased !== undefined && !isOwner) {
@@ -202,14 +202,14 @@ export async function DELETE(
     }
     
     // Get the wishlist
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
     
     // Only the owner can delete items
-    if (wishlist.user_id !== userId) {
+    if (wishlist.user_id.toString() !== userId) {
       return NextResponse.json({ error: 'Only the owner can delete items' }, { status: 403 });
     }
     

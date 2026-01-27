@@ -28,9 +28,9 @@ export async function GET(
     }
 
     // Check if user is owner or is following the wishlist
-    const isOwner = wishlist.user_id === userId;
+    const isOwner = wishlist.user_id.toString() === userId;
     const isFollowing = db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
-      .get(userId, id);
+      .get(Number(userId), id);
 
     // If wishlist is private and user is not the owner, deny access
     if (wishlist.is_private && !isOwner) {
@@ -66,7 +66,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
-    if (wishlist.user_id !== userId) {
+    if (wishlist.user_id.toString() !== userId) {
       return forbiddenResponse();
     }
 
@@ -93,13 +93,13 @@ export async function PATCH(
     const { id } = await params;
     const body: UpdateWishlistInput = await request.json();
     
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
-    if (wishlist.user_id !== userId) {
+    if (wishlist.user_id.toString() !== userId) {
       return forbiddenResponse();
     }
     

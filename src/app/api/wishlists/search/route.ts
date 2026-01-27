@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is the owner
-    const isOwner = wishlist.user_id === userId;
+    const isOwner = wishlist.user_id.toString() === userId;
 
     // If wishlist is private and user is not the owner, deny access
     if (wishlist.is_private && !isOwner) {
