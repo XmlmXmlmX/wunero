@@ -58,15 +58,15 @@ export async function POST(
     const itemId = nanoid();
     const now = Date.now();
     
-    // Extract product info from URL if provided
+    // Extract product info from URL if provided (only if image_url not already provided)
     let productInfo: { title?: string; image_url?: string; price?: string; currency?: string } = {};
-    if (body.url) {
+    if (body.url && !body.image_url) {
       productInfo = await extractProductInfo(body.url);
     }
     
     const stmt = db.prepare(`
-      INSERT INTO wish_items (id, wishlist_id, title, description, url, image_url, price, currency, priority, quantity, importance, purchased, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO wish_items (id, wishlist_id, title, description, url, image_url, price, currency, priority, quantity, importance, purchased, purchased_quantity, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
     stmt.run(
@@ -75,13 +75,14 @@ export async function POST(
       body.title,
       body.description || null,
       body.url || null,
-      productInfo.image_url || null,
+      body.image_url || productInfo.image_url || null,
       body.price || productInfo.price || null,
       body.currency || productInfo.currency || 'EUR',
-      body.priority || 0,
-      body.quantity || 1,
+      body.priority ?? 0,
+      body.quantity ?? 1,
       body.importance || 'would-love',
       0,
+      body.purchased_quantity ?? 0,
       now,
       now
     );

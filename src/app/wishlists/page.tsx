@@ -1,21 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { nanoid } from "nanoid";
 import { WuButton } from "@/components/atoms";
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
 import { WuWishlistCard } from "@/components/molecules/WuWishlistCard/WuWishlistCard";
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
 import { WuWishlistForm } from "@/components/organisms/WuWishlistForm/WuWishlistForm";
 import { WuFollowWishlistForm } from "@/components/organisms/WuFollowWishlistForm/WuFollowWishlistForm";
+import { WuImportAmazonWishlistForm } from "@/components/organisms/WuImportAmazonWishlistForm/WuImportAmazonWishlistForm";
 import type { Wishlist } from "@/types";
 import styles from "./page.module.css";
 
 export default function WishlistsPage() {
+  const router = useRouter();
   const [ownWishlists, setOwnWishlists] = useState<Wishlist[]>([]);
   const [followedWishlists, setFollowedWishlists] = useState<Wishlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewForm, setShowNewForm] = useState(false);
   const [showFollowForm, setShowFollowForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
 
   useEffect(() => {
     loadWishlists();
@@ -56,6 +61,57 @@ export default function WishlistsPage() {
       }
     } catch (error) {
       console.error("Error creating wishlist:", error);
+    }
+  };
+
+  const handleImportAmazon = async (items: any[]) => {
+    try {
+      // Create a new wishlist for the imported items
+      const wishlistTitle = `Imported from Amazon (${new Date().toLocaleDateString()})`;
+      const createResponse = await fetch("/api/wishlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          title: wishlistTitle,
+          description: "Items imported from Amazon wishlist" 
+        }),
+      });
+
+      if (!createResponse.ok) {
+        alert("Failed to create wishlist for imported items");
+        return;
+      }
+
+      const newWishlist = await createResponse.json();
+
+      // Add each imported item to the new wishlist
+      for (const item of items) {
+        await fetch(`/api/wishlists/${newWishlist.id}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: item.title,
+            description: item.description,
+            url: item.url,
+            image_url: item.image_url,
+            price: item.price,
+            currency: item.currency,
+            quantity: item.quantity ?? 1,
+            priority: item.priority ?? 0,
+            importance: item.importance ?? "nice-to-have",
+            purchased_quantity: item.purchased_quantity ?? 0,
+          }),
+        });
+      }
+
+      setShowImportForm(false);
+      loadWishlists();
+      
+      // Navigate to the newly created wishlist
+      router.push(`/wishlists/${newWishlist.id}`);
+    } catch (error) {
+      console.error("Error importing Amazon wishlist:", error);
+      alert("Failed to import items");
     }
   };
 
@@ -107,10 +163,22 @@ export default function WishlistsPage() {
               <div className={styles.headerActions}>
                 <WuButton
                   type="button"
+                  variant={showImportForm ? "outline" : "ghost"}
+                  onClick={() => {
+                    setShowImportForm(!showImportForm);
+                    setShowNewForm(false);
+                    setShowFollowForm(false);
+                  }}
+                >
+                  {showImportForm ? "Cancel" : "📦 Import"}
+                </WuButton>
+                <WuButton
+                  type="button"
                   variant={showFollowForm ? "outline" : "ghost"}
                   onClick={() => {
                     setShowFollowForm(!showFollowForm);
                     setShowNewForm(false);
+                    setShowImportForm(false);
                   }}
                 >
                   {showFollowForm ? "Cancel" : "+ Follow"}
@@ -121,6 +189,7 @@ export default function WishlistsPage() {
                   onClick={() => {
                     setShowNewForm(!showNewForm);
                     setShowFollowForm(false);
+                    setShowImportForm(false);
                   }}
                 >
                   {showNewForm ? "Cancel" : "+ New Wishlist"}
@@ -144,6 +213,15 @@ export default function WishlistsPage() {
                 loadWishlists();
               }} 
               onCancel={() => setShowFollowForm(false)} 
+            />
+          </div>
+        )}
+
+        {showImportForm && (
+          <div className={styles.formWrapper}>
+            <WuImportAmazonWishlistForm 
+              onSuccess={handleImportAmazon}
+              onCancel={() => setShowImportForm(false)} 
             />
           </div>
         )}

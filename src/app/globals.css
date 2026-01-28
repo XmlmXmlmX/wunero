@@ -123,3 +123,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+a:is([href^="https://www.amazon."], [href^="https://amazon."])::before {
+  content: '';
+  background: url('https://www.amazon.de/favicon.ico') no-repeat center center;
+  background-size: 1em;
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+}
