@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="src/app/logo.svg" alt="Wunero Logo" width="220" />
+    <img src="/src/assets/logo.svg" alt="Wunero Logo" width="220" style="background:black; border-radius:.75rem;border:1px solid"/>
 </p>
 <p align="center">Joy starts with a wish.</p>
 <p align="center">
