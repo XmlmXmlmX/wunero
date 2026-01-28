@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { AuthProvider } from "@/lib/auth-provider";
 import { WuNavbar } from "@/components/organisms/WuNavbar/WuNavbar";
 import "./globals.css";
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
     title: "Wunero",
   },
   applicationName: "Wunero",
-  themeColor: "#000",
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -26,6 +25,10 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon-180x180.png", sizes: "180x180" },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#000",
 };
 
 export default function RootLayout({
