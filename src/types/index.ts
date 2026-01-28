@@ -1,6 +1,24 @@
 export type WishItemImportance = 'must-have' | 'would-love' | 'nice-to-have' | 'not-sure';
 export type Currency = 'EUR' | 'GBP' | 'USD';
 
+export interface User {
+  id: string;
+  email: string;
+  password_hash: string;
+  created_at: number;
+  avatar_url?: string;
+  name?: string;
+  preferred_currency?: Currency;
+  email_verified?: number;
+  email_verified_at?: number;
+  verification_token?: string;
+  verification_token_expires?: number;
+}
+
+export interface QueryParams {
+  [key: string]: string | number | boolean | undefined;
+}
+
 export interface Wishlist {
   id: string;
   user_id: string;

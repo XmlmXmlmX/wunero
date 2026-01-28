@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import AzureADProvider from "next-auth/providers/azure-ad";
 import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
+import type { User } from "@/types";
 import db from "./db";
 
 const providers: NextAuthOptions["providers"] = [
@@ -18,13 +19,19 @@ const providers: NextAuthOptions["providers"] = [
         return null;
       }
 
-      const user = db.prepare("SELECT id, email, password_hash FROM users WHERE email = ?").get(credentials.email) as { id: string; email: string; password_hash: string } | undefined;
+      interface UserRow {
+        id: string;
+        email: string;
+        password_hash: string;
+      }
+
+      const user = await db.prepare<UserRow>("SELECT id, email, password_hash FROM users WHERE email = ?").get(credentials.email);
       if (!user) return null;
 
       const isValid = await bcrypt.compare(credentials.password, user.password_hash);
       if (!isValid) return null;
 
-      return { id: user.id, email: user.email } as any;
+      return { id: user.id, email: user.email };
     },
   }),
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET

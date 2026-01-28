@@ -3,6 +3,13 @@ import db from '@/lib/db';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 import type { Wishlist } from '@/types';
 
+interface SearchWishlistRow extends Wishlist {
+  user_id: number;
+  is_private: number;
+  owner_email?: string;
+  owner_name?: string;
+}
+
 // Helper function to extract ID from URL or return as-is
 function extractWishlistId(input: string): string {
   // Check if input is a URL
@@ -39,12 +46,12 @@ export async function GET(request: NextRequest) {
     // Extract ID from URL or use as-is
     const wishlistId = extractWishlistId(input);
 
-    const wishlist = db.prepare(`
+    const wishlist = db.prepare<SearchWishlistRow>(`
       SELECT w.*, u.email as owner_email, u.name as owner_name
       FROM wishlists w
       LEFT JOIN users u ON w.user_id = u.id
       WHERE w.id = ?
-    `).get(wishlistId) as { user_id: number; is_private: number; owner_email?: string; owner_name?: string; [key: string]: any } | undefined;
+    `).get(wishlistId);
 
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });

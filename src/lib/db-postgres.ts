@@ -1,18 +1,38 @@
 import { sql } from '@vercel/postgres';
 
+export interface PreparedStatement<T = Record<string, unknown>> {
+  get: (params?: unknown[] | Record<string, unknown>) => Promise<T | undefined>;
+  all: (params?: unknown[] | Record<string, unknown>) => Promise<T[]>;
+  run: (params?: unknown[] | Record<string, unknown>) => Promise<{ lastInsertRowid: number | bigint; changes: number }>;
+}
+
 export interface Database {
-  prepare: (query: string) => {
-    get: (params?: any) => any;
-    all: (params?: any) => any[];
-    run: (params?: any) => { lastInsertRowid: number | bigint; changes: number };
-  };
-  exec: (sql: string) => void;
+  prepare: <T = Record<string, unknown>>(query: string) => PreparedStatement<T>;
+  exec: (sqlString: string) => Promise<void>;
+}
+
+// Helper to split and execute multiple SQL statements
+async function execMultiple(sqlString: string): Promise<void> {
+  // Split by semicolon but keep them intact, handle multi-line statements
+  const statements = sqlString
+    .split(';')
+    .map(stmt => stmt.trim())
+    .filter(stmt => stmt.length > 0);
+
+  for (const statement of statements) {
+    try {
+      await sql.query(statement);
+    } catch (error) {
+      console.error('SQL Error:', statement, error);
+      throw error;
+    }
+  }
 }
 
 // Postgres adapter that mimics better-sqlite3 API
 export async function createPostgresAdapter(): Promise<Database> {
-  // Initialize schema
-  await sql`
+  // Initialize schema - run statements individually
+  const createTablesSQL = `
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
@@ -58,24 +78,26 @@ export async function createPostgresAdapter(): Promise<Database> {
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
   `;
 
+  await execMultiple(createTablesSQL);
+
   return {
-    prepare: (query: string) => {
+    prepare: <T = Record<string, unknown>>(query: string): PreparedStatement<T> => {
       // Convert SQLite placeholders (?) to Postgres ($1, $2, etc.)
       let paramCount = 0;
       const pgQuery = query.replace(/\?/g, () => `$${++paramCount}`);
 
       return {
-        get: async (params?: any) => {
+        get: async (params?: unknown[] | Record<string, unknown>): Promise<T | undefined> => {
           const values = Array.isArray(params) ? params : params ? [params] : [];
           const result = await sql.query(pgQuery, values);
-          return result.rows[0] || undefined;
+          return result.rows[0] as T | undefined;
         },
-        all: async (params?: any) => {
+        all: async (params?: unknown[] | Record<string, unknown>): Promise<T[]> => {
           const values = Array.isArray(params) ? params : params ? [params] : [];
           const result = await sql.query(pgQuery, values);
-          return result.rows;
+          return result.rows as T[];
         },
-        run: async (params?: any) => {
+        run: async (params?: unknown[] | Record<string, unknown>): Promise<{ lastInsertRowid: number | bigint; changes: number }> => {
           const values = Array.isArray(params) ? params : params ? [params] : [];
           const result = await sql.query(pgQuery, values);
           return {
@@ -85,8 +107,6 @@ export async function createPostgresAdapter(): Promise<Database> {
         },
       };
     },
-    exec: async (sqlString: string) => {
-      await sql.query(sqlString);
-    },
+    exec: execMultiple,
   };
 }

@@ -37,11 +37,11 @@ export async function PATCH(request: NextRequest) {
       return unauthorizedResponse();
     }
 
-    const body = await request.json();
+    const body = await request.json() as { name?: string | null; avatar_url?: string | null };
     const { name, avatar_url } = body;
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | null)[] = [];
 
     if (name !== undefined) {
       updates.push('name = ?');
@@ -61,7 +61,13 @@ export async function PATCH(request: NextRequest) {
 
     db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
-    const updatedUser = db.prepare('SELECT id, email, name, avatar_url, created_at FROM users WHERE id = ?').get(userId);
+    const updatedUser = db.prepare<{
+      id: string;
+      email: string;
+      name: string | null;
+      avatar_url: string | null;
+      created_at: number;
+    }>('SELECT id, email, name, avatar_url, created_at FROM users WHERE id = ?').get(userId);
 
     return NextResponse.json(updatedUser);
   } catch (error) {

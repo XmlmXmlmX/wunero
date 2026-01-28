@@ -3,6 +3,12 @@ import db from '@/lib/db';
 import { requireAuth, unauthorizedResponse, forbiddenResponse } from '@/lib/api-auth';
 import type { Wishlist, UpdateWishlistInput } from '@/types';
 
+interface WishlistRow extends Wishlist {
+  items_count: number;
+  is_private: number;
+  user_id: number;
+}
+
 // GET /api/wishlists/[id] - Get a specific wishlist (owner or follower can view)
 export async function GET(
   request: NextRequest,
@@ -15,13 +21,13 @@ export async function GET(
     }
 
     const { id } = await params;
-    const wishlist = db.prepare(`
+    const wishlist = db.prepare<WishlistRow>(`
       SELECT w.*, COUNT(wi.id) as items_count
       FROM wishlists w
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
       WHERE w.id = ?
       GROUP BY w.id
-    `).get(id) as { user_id: number; is_private: number; [key: string]: any } | undefined;
+    `).get(id);
 
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });

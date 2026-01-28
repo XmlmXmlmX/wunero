@@ -4,9 +4,14 @@ import { nanoid } from "nanoid";
 import db from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/email";
 
+interface RegisterRequest {
+  email?: unknown;
+  password?: unknown;
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body: RegisterRequest = await request.json();
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";
 
@@ -18,7 +23,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
     }
 
-    const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
+    const existing = await db.prepare("SELECT id FROM users WHERE email = ?").get(email);
     if (existing) {
       return NextResponse.json({ error: "User already exists" }, { status: 409 });
     }
@@ -29,7 +34,7 @@ export async function POST(request: Request) {
     const verificationToken = nanoid(32);
     const tokenExpires = now + 24 * 60 * 60 * 1000; // 24 hours
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO users (
         id, 
         email, 

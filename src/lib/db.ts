@@ -110,11 +110,11 @@ async function getDb() {
 // Export a proxy that handles async initialization transparently
 export default new Proxy({} as Database.Database, {
   get(target, prop) {
-    return function (...args: any[]) {
+    return function (...args: unknown[]) {
       return getDb().then((db) => {
-        const method = db[prop];
+        const method = (db as Record<string, unknown>)[prop];
         if (typeof method === 'function') {
-          const result = method.apply(db, args);
+          const result = (method as (...arg: unknown[]) => unknown).apply(db, args);
           // Handle async Postgres methods
           return result;
         }
