@@ -43,4 +43,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+# Note: PORT can be overridden via environment variable at runtime
+
 CMD ["node", "server.js"]

@@ -2,14 +2,15 @@ services:
   wunero:
     build: .
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - wunero-data:/app/data
     environment:
       - NODE_ENV=production
+      - PORT=3001
       - DB_PATH=/app/data
       - NEXTAUTH_SECRET=dev-secret-change-me
-      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:3001
     restart: unless-stopped
 
 volumes:
