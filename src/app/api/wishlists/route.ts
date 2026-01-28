@@ -18,7 +18,7 @@ export async function GET() {
       FROM wishlists w
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
       WHERE w.user_id = ?
-      GROUP BY w.id
+      GROUP BY w.id, w.title, w.description, w.created_at, w.updated_at, w.user_id, w.is_private
       ORDER BY w.updated_at DESC
     `).all(userId) as unknown as Wishlist[];
     
@@ -30,7 +30,7 @@ export async function GET() {
       LEFT JOIN users u ON w.user_id = u.id
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
       WHERE fw.user_id = ?
-      GROUP BY w.id
+      GROUP BY w.id, w.title, w.description, w.created_at, w.updated_at, w.user_id, w.is_private, fw.created_at, u.email, u.name
       ORDER BY fw.created_at DESC
     `).all(userId) as unknown as Array<Wishlist & { followed_at: number; owner_email?: string; owner_name?: string }>;
     
