@@ -83,6 +83,34 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
+### Deploying to Vercel
+
+#### Option 1: Vercel Postgres (Recommended)
+
+1. Create a Vercel Postgres database in your project:
+   - Go to Vercel Dashboard → Storage → Create Database → Postgres
+   - Copy the `POSTGRES_URL` from the `.env.local` tab
+
+2. Add environment variable to your Vercel project:
+   ```bash
+   POSTGRES_URL=postgres://user:password@host/database
+   ```
+
+3. Deploy your app:
+   ```bash
+   vercel deploy
+   ```
+
+The app automatically detects `POSTGRES_URL` and uses Vercel Postgres instead of SQLite.
+
+#### Option 2: SQLite (Development Only)
+
+⚠️ **Not recommended for production** - SQLite on Vercel uses `/tmp` storage:
+- Data is lost between deployments
+- Each serverless function has its own database
+
+Simply deploy without `POSTGRES_URL` for testing.
+
 ## ⚙️ Configuration
 
 ### Environment Variables
@@ -94,7 +122,10 @@ Copy `.env.example` to `.env.local` and configure:
 - `NEXTAUTH_SECRET` - Secret key for JWT encryption (min. 32 characters)
   - Generate a secure secret: `openssl rand -base64 32`
   - **Must be the same in `.env.local` and `docker-compose.yml`**
-- `NEXTAUTH_URL` - URL where the app is hosted (e.g., `http://localhost:3000` for dev, `https://yourdomain.com` for production)
+- `NEXTAUTH_URL` - URL where the app is hosted (optional, auto-detects if not set)
+  - Development: `http://localhost:3000`
+  - Production: `https://yourdomain.com`
+  - **Required for Docker/reverse proxy setups**
 
 #### Optional (OAuth Providers - Beta)
 
