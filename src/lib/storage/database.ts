@@ -1,0 +1,80 @@
+/**
+ * Common database interface
+ * Both SQLite and Postgres adapters implement this interface
+ * to provide a unified API for the application
+ */
+
+export interface PreparedStatement<T = Record<string, unknown>> {
+  get: (...params: unknown[]) => Promise<T | undefined>;
+  all: (...params: unknown[]) => Promise<T[]>;
+  run: (...params: unknown[]) => Promise<{ lastInsertRowid: number | bigint; changes: number }>;
+}
+
+export interface Database {
+  prepare: <T = Record<string, unknown>>(query: string) => PreparedStatement<T>;
+  exec: (sqlString: string) => Promise<void>;
+}
+
+// Shared database schema
+export const DATABASE_SCHEMA = `
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    avatar_url TEXT,
+    name TEXT,
+    preferred_currency TEXT DEFAULT 'EUR',
+    email_verified INTEGER DEFAULT 0,
+    email_verified_at INTEGER,
+    verification_token TEXT,
+    verification_token_expires INTEGER
+  );
+
+  CREATE TABLE IF NOT EXISTS wishlists (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    user_id TEXT NOT NULL DEFAULT 'anonymous',
+    is_private INTEGER DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS wish_items (
+    id TEXT PRIMARY KEY,
+    wishlist_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    url TEXT,
+    image_url TEXT,
+    price TEXT,
+    priority INTEGER DEFAULT 0,
+    purchased INTEGER DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    importance TEXT DEFAULT 'would-love',
+    currency TEXT DEFAULT 'EUR',
+    purchased_quantity INTEGER DEFAULT 0,
+    FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS followed_wishlists (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    wishlist_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE,
+    UNIQUE(user_id, wishlist_id)
+  );
+`;
+
+export const DATABASE_INDEXES = `
+  CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+  CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
+  CREATE INDEX IF NOT EXISTS idx_wish_items_wishlist_id ON wish_items(wishlist_id);
+  CREATE INDEX IF NOT EXISTS idx_wishlists_user_id ON wishlists(user_id);
+  CREATE INDEX IF NOT EXISTS idx_followed_wishlists_user_id ON followed_wishlists(user_id);
+  CREATE INDEX IF NOT EXISTS idx_followed_wishlists_wishlist_id ON followed_wishlists(wishlist_id);
+`;

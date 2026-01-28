@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 import type { Wishlist } from '@/types';
 
 interface SearchWishlistRow extends Wishlist {
-  user_id: number;
+  user_id: string;
   is_private: number;
   owner_email?: string;
   owner_name?: string;
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     // Extract ID from URL or use as-is
     const wishlistId = extractWishlistId(input);
 
-    const wishlist = db.prepare<SearchWishlistRow>(`
+    const wishlist = await db.prepare<SearchWishlistRow>(`
       SELECT w.*, u.email as owner_email, u.name as owner_name
       FROM wishlists w
       LEFT JOIN users u ON w.user_id = u.id
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is already following
-    const isFollowing = db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
+    const isFollowing = await db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
       .get(userId, wishlistId);
 
     return NextResponse.json({

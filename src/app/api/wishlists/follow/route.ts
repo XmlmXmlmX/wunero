@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 
 // POST /api/wishlists/follow - Follow a wishlist
@@ -19,13 +19,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if wishlist exists
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(wishlistId);
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(wishlistId);
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
     // Check if already following
-    const existing = db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
+    const existing = await db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
       .get(userId, wishlistId);
 
     if (existing) {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const id = nanoid();
     const now = Date.now();
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO followed_wishlists (id, user_id, wishlist_id, created_at)
       VALUES (?, ?, ?, ?)
     `).run(id, userId, wishlistId, now);
@@ -62,7 +62,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Wishlist ID is required' }, { status: 400 });
     }
 
-    const result = db.prepare('DELETE FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
+    const result = await db.prepare('DELETE FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
       .run(userId, wishlistId);
 
     if (result.changes === 0) {

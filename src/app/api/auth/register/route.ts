@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
-import db from "@/lib/db";
+import db from "@/lib/storage";
 import { sendVerificationEmail } from "@/lib/email";
 
 interface RegisterRequest {

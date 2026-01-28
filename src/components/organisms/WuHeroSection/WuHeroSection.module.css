@@ -6,12 +6,6 @@
 .logo {
   margin: 0 auto 2rem;
   display: block;
-  border-radius: 20px;
-  padding: 3px;
-  background: linear-gradient(45deg, #3a7afe, #B480AD, #8b5cf6, #3a7afe);
-  background-size: 300% 300%;
-  animation: rotateBorder 4s linear infinite;
-  position: relative;
 }
 
 @keyframes rotateBorder {
@@ -43,7 +37,11 @@
   margin: 0 0 0.75rem;
   font-size: 3rem;
   font-weight: 800;
-  color: #492e86;
+  background: linear-gradient(90deg, #482e86a9, #d409c3a9, #bd2ee9a9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
   letter-spacing: -0.02em;
 }
 

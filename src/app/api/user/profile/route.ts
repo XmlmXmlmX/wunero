@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 
 // GET /api/user/profile - Get current user profile
@@ -10,7 +10,7 @@ export async function GET() {
       return unauthorizedResponse();
     }
 
-    const user = db.prepare('SELECT id, email, name, avatar_url, created_at FROM users WHERE id = ?').get(userId) as {
+    const user = await db.prepare('SELECT id, email, name, avatar_url, created_at FROM users WHERE id = ?').get(userId) as {
       id: string;
       email: string;
       name: string | null;
@@ -59,9 +59,9 @@ export async function PATCH(request: NextRequest) {
 
     values.push(userId);
 
-    db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    await db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
-    const updatedUser = db.prepare<{
+    const updatedUser = await db.prepare<{
       id: string;
       email: string;
       name: string | null;

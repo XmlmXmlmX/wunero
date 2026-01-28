@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 import { requireAuth, unauthorizedResponse, forbiddenResponse } from '@/lib/api-auth';
 import type { Wishlist, UpdateWishlistInput } from '@/types';
 
 interface WishlistRow extends Wishlist {
   items_count: number;
   is_private: number;
-  user_id: number;
+  user_id: string;
 }
 
 // GET /api/wishlists/[id] - Get a specific wishlist (owner or follower can view)
@@ -21,7 +21,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const wishlist = db.prepare<WishlistRow>(`
+    const wishlist = await db.prepare<WishlistRow>(`
       SELECT w.*, COUNT(wi.id) as items_count
       FROM wishlists w
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
@@ -35,7 +35,7 @@ export async function GET(
 
     // Check if user is owner or is following the wishlist
     const isOwner = wishlist.user_id.toString() === userId;
-    const isFollowing = db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
+    const isFollowing = await db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
       .get(userId, id);
 
     // If wishlist is private and user is not the owner, deny access
@@ -66,7 +66,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string } | undefined;
 
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
@@ -76,7 +76,7 @@ export async function DELETE(
       return forbiddenResponse();
     }
 
-    db.prepare('DELETE FROM wishlists WHERE id = ?').run(id);
+    await db.prepare('DELETE FROM wishlists WHERE id = ?').run(id);
 
     return NextResponse.json({ message: 'Wishlist deleted successfully' });
   } catch (error) {
@@ -99,7 +99,7 @@ export async function PATCH(
     const { id } = await params;
     const body: UpdateWishlistInput = await request.json();
     
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string } | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
@@ -132,9 +132,9 @@ export async function PATCH(
     values.push(id);
     
     const stmt = db.prepare(`UPDATE wishlists SET ${updates.join(', ')} WHERE id = ?`);
-    stmt.run(...values);
+    await stmt.run(...values);
     
-    const updated = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as Wishlist;
+    const updated = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as unknown as Wishlist;
     
     return NextResponse.json(updated);
   } catch (error) {

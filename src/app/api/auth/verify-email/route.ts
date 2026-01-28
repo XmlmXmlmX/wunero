@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Find user with this token
-    const user = db.prepare(`
+    const user = await db.prepare(`
       SELECT id, email, email_verified, verification_token_expires
       FROM users
       WHERE verification_token = ?
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the email
-    db.prepare(`
+    await db.prepare(`
       UPDATE users
       SET email_verified = 1,
           email_verified_at = ?,
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user
-    const user = db.prepare(`
+    const user = await db.prepare(`
       SELECT id, email, email_verified
       FROM users
       WHERE email = ?
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
     // Update user with new token
-    db.prepare(`
+    await db.prepare(`
       UPDATE users
       SET verification_token = ?,
           verification_token_expires = ?

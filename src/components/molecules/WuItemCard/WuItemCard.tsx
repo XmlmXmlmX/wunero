@@ -98,7 +98,7 @@ export function WuItemCard({
           {item.description && <p className={styles.description}>{item.description}</p>}
           {item.price && (
             <p className={styles.price}>
-              {currencySymbols[item.currency]} {item.price}
+              {item.currency ? currencySymbols[item.currency] : '€'} {item.price}
             </p>
           )}
 

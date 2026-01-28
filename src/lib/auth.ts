@@ -4,8 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import AzureADProvider from "next-auth/providers/azure-ad";
 import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
-import type { User } from "@/types";
-import db from "./db";
+import db from "./storage";
 
 const providers: NextAuthOptions["providers"] = [
   CredentialsProvider({

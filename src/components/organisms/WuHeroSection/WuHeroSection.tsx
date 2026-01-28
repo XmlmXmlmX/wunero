@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { WuButtonLink } from "@/components/atoms";
 import { type WuOrganism } from "@/types/WuOrganism";
 import styles from "./WuHeroSection.module.css";
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/logo_on_dark.svg";
 
 export function WuHeroSection({ className, ...rest }: WuOrganism<HTMLElement> = {}) {
   const { status } = useSession();
@@ -31,7 +31,7 @@ export function WuHeroSection({ className, ...rest }: WuOrganism<HTMLElement> = 
   return (
     <section className={classes} {...rest}>
       <div className={styles.logoContainer}>
-        <Image src={logo} alt="Wunero" width={320} height={80} className={styles.logo} />
+        <Image src={logo} alt="Wunero" width={598} height={128} className={styles.logo} />
       </div>
       <div className={styles.badge}>🎉 Joy starts with a wish</div>
       <h1 className={styles.title}>Collect, organize, and share wishes with ease</h1>

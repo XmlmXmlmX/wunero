@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 import type { Wishlist, CreateWishlistInput } from '@/types';
 
@@ -13,17 +13,17 @@ export async function GET() {
     }
     
     // Get user's own wishlists with item count
-    const ownWishlists = db.prepare(`
+    const ownWishlists = await db.prepare(`
       SELECT w.*, COUNT(wi.id) as items_count
       FROM wishlists w
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
       WHERE w.user_id = ?
       GROUP BY w.id
       ORDER BY w.updated_at DESC
-    `).all(userId) as Wishlist[];
+    `).all(userId) as unknown as Wishlist[];
     
     // Get followed wishlists with owner info and item count
-    const followedWishlists = db.prepare(`
+    const followedWishlists = await db.prepare(`
       SELECT w.*, fw.created_at as followed_at, u.email as owner_email, u.name as owner_name, COUNT(wi.id) as items_count
       FROM followed_wishlists fw
       JOIN wishlists w ON fw.wishlist_id = w.id
@@ -32,7 +32,7 @@ export async function GET() {
       WHERE fw.user_id = ?
       GROUP BY w.id
       ORDER BY fw.created_at DESC
-    `).all(userId) as Array<Wishlist & { followed_at: number; owner_email?: string; owner_name?: string }>;
+    `).all(userId) as unknown as Array<Wishlist & { followed_at: number; owner_email?: string; owner_name?: string }>;
     
     return NextResponse.json({
       own: ownWishlists,
@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     
-    stmt.run(id, userId, body.title, body.description || null, body.is_private ? 1 : 0, now, now);
+    await stmt.run(id, userId, body.title, body.description || null, body.is_private ? 1 : 0, now, now);
     
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as Wishlist;
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as unknown as Wishlist;
     
     return NextResponse.json(wishlist, { status: 201 });
   } catch (error) {

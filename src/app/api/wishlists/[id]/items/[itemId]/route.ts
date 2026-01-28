@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 import { extractProductInfo } from '@/lib/productParser';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 import type { WishItem, UpdateWishItemInput } from '@/types';
@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { itemId } = await params;
-    const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as WishItem | undefined;
+    const item = await db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as WishItem | undefined;
     
     if (!item) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
@@ -35,14 +35,14 @@ export async function PATCH(
     const body: UpdateWishItemInput = await request.json();
     
     // Get the item
-    const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId);
+    const item = await db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId);
     
     if (!item) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
     
     // Get the wishlist
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number; is_private: number } | undefined;
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string; is_private: number } | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
@@ -82,9 +82,9 @@ export async function PATCH(
       values.push(itemId);
       
       const stmt = db.prepare(`UPDATE wish_items SET ${updates.join(', ')} WHERE id = ?`);
-      stmt.run(...values);
+      await stmt.run(...values);
       
-      const updated = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as WishItem;
+      const updated = await db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as unknown as WishItem;
       return NextResponse.json(updated);
     }
     
@@ -169,9 +169,9 @@ export async function PATCH(
     values.push(itemId);
     
     const stmt = db.prepare(`UPDATE wish_items SET ${updates.join(', ')} WHERE id = ?`);
-    stmt.run(...values);
+    await stmt.run(...values);
     
-    const updated = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as WishItem;
+    const updated = await db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as unknown as WishItem;
     
     return NextResponse.json(updated);
   } catch (error) {
@@ -195,14 +195,14 @@ export async function DELETE(
     }
     
     // Get the item
-    const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId);
+    const item = await db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId);
     
     if (!item) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
     
     // Get the wishlist
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string } | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
@@ -213,7 +213,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Only the owner can delete items' }, { status: 403 });
     }
     
-    db.prepare('DELETE FROM wish_items WHERE id = ?').run(itemId);
+    await db.prepare('DELETE FROM wish_items WHERE id = ?').run(itemId);
     
     return NextResponse.json({ message: 'Item deleted successfully' });
   } catch (error) {

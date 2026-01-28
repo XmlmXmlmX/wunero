@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import db from '@/lib/db';
+import db from '@/lib/storage';
 import { extractProductInfo } from '@/lib/productParser';
 import { requireAuth, unauthorizedResponse, forbiddenResponse } from '@/lib/api-auth';
 import type { WishItem, CreateWishItemInput } from '@/types';
@@ -14,12 +14,12 @@ export async function GET(
     const { id } = await params;
     
     // Check if wishlist exists
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id);
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
     
-    const items = db.prepare('SELECT * FROM wish_items WHERE wishlist_id = ? ORDER BY priority DESC, created_at DESC').all(id) as WishItem[];
+    const items = await db.prepare('SELECT * FROM wish_items WHERE wishlist_id = ? ORDER BY priority DESC, created_at DESC').all(id) as unknown as WishItem[];
     return NextResponse.json(items);
   } catch (error) {
     console.error('Error fetching wish items:', error);
@@ -42,7 +42,7 @@ export async function POST(
     const body: CreateWishItemInput = await request.json();
     
     // Check if wishlist exists and user is owner
-    const wishlist = db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: number } | undefined;
+    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string } | undefined;
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
@@ -86,7 +86,7 @@ export async function POST(
       now
     );
     
-    const item = db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as WishItem;
+    const item = await db.prepare('SELECT * FROM wish_items WHERE id = ?').get(itemId) as unknown as WishItem;
     
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
