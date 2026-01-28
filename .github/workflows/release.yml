@@ -1,0 +1,66 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          # Generate changelog from commits
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # Save to output
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            ## What's Changed
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Installation
+            
+            ### Docker (Recommended)
+            ```bash
+            docker pull ghcr.io/xmlmxmlmx/wunero:${{ github.ref_name }}
+            # or
+            docker pull sebastianhoesl/wunero:${{ github.ref_name }}
+            ```
+            
+            ### Docker Compose
+            ```yaml
+            services:
+              wunero:
+                image: ghcr.io/xmlmxmlmx/wunero:${{ github.ref_name }}
+                # ... rest of config
+            ```
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
