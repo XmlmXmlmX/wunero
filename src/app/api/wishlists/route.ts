@@ -60,14 +60,18 @@ export async function POST(request: NextRequest) {
     const id = nanoid();
     const now = Date.now();
     
+    console.log('Creating wishlist:', { id, userId, title: body.title, now });
+    
     const stmt = db.prepare(`
       INSERT INTO wishlists (id, user_id, title, description, is_private, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     
-    await stmt.run(id, userId, body.title, body.description || null, body.is_private ? 1 : 0, now, now);
+    const result = await stmt.run(id, userId, body.title, body.description || null, body.is_private ? 1 : 0, now, now);
+    console.log('Insert result:', result);
     
     const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as unknown as Wishlist;
+    console.log('Retrieved wishlist:', wishlist);
     
     return NextResponse.json(wishlist, { status: 201 });
   } catch (error) {

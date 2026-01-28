@@ -45,15 +45,21 @@ export async function createPostgresAdapter(): Promise<Database> {
       const pgQuery = convertPlaceholders(query);
       return {
         get: async (...params: unknown[]) => {
+          console.log('PG GET:', pgQuery, 'params:', params);
           const result = await sql.query(pgQuery, params);
+          console.log('PG GET result rows:', result.rows.length);
           return (result.rows[0] as T) || undefined;
         },
         all: async (...params: unknown[]) => {
+          console.log('PG ALL:', pgQuery, 'params:', params);
           const result = await sql.query(pgQuery, params);
+          console.log('PG ALL result rows:', result.rows.length);
           return result.rows as T[];
         },
         run: async (...params: unknown[]) => {
+          console.log('PG RUN:', pgQuery, 'params:', params);
           const result = await sql.query(pgQuery, params);
+          console.log('PG RUN rowCount:', result.rowCount);
           return {
             lastInsertRowid: 0,
             changes: result.rowCount ?? 0,
