@@ -1,0 +1,106 @@
+name: Code Quality Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: false
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+        continue-on-error: false
+
+  build-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          NEXTAUTH_SECRET: test-secret-for-ci
+          NEXTAUTH_URL: http://localhost:3000
+
+      - name: Check build output
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "Build failed: .next directory not found"
+            exit 1
+          fi
+          echo "✓ Build successful"
+
+  docker-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: wunero:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: |
+          docker run -d --name wunero-test \
+            -e NEXTAUTH_SECRET=test-secret \
+            -e NEXTAUTH_URL=http://localhost:3000 \
+            -p 3000:3000 \
+            wunero:test
+          
+          # Wait for container to start
+          sleep 10
+          
+          # Check if container is running
+          if [ "$(docker ps -q -f name=wunero-test)" ]; then
+            echo "✓ Container started successfully"
+            docker logs wunero-test
+            docker stop wunero-test
+          else
+            echo "✗ Container failed to start"
+            docker logs wunero-test
+            exit 1
+          fi
