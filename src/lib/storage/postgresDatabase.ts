@@ -7,6 +7,12 @@ import { sql } from '@vercel/postgres';
 import type { Database, PreparedStatement } from './database';
 import { DATABASE_SCHEMA, DATABASE_INDEXES } from './database';
 
+// Helper to convert SQLite-style ? placeholders to PostgreSQL $1, $2, etc.
+function convertPlaceholders(query: string): string {
+  let index = 0;
+  return query.replace(/\?/g, () => `$${++index}`);
+}
+
 // Helper to split and execute multiple SQL statements
 async function execMultiple(sqlString: string): Promise<void> {
   // Split by semicolon but keep them intact, handle multi-line statements
@@ -35,17 +41,18 @@ export async function createPostgresAdapter(): Promise<Database> {
 
   return {
     prepare<T = Record<string, unknown>>(query: string): PreparedStatement<T> {
+      const pgQuery = convertPlaceholders(query);
       return {
         get: async (...params: unknown[]) => {
-          const result = await sql.query(query, params);
+          const result = await sql.query(pgQuery, params);
           return (result.rows[0] as T) || undefined;
         },
         all: async (...params: unknown[]) => {
-          const result = await sql.query(query, params);
+          const result = await sql.query(pgQuery, params);
           return result.rows as T[];
         },
         run: async (...params: unknown[]) => {
-          const result = await sql.query(query, params);
+          const result = await sql.query(pgQuery, params);
           return {
             lastInsertRowid: 0,
             changes: result.rowCount ?? 0,
