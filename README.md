@@ -22,6 +22,8 @@
 </p>
 <p align="center">Joy starts with a wish.</p>
 
+<img width="1187" height="593" alt="image" src="https://github.com/user-attachments/assets/0ba3d4c2-275e-4428-98d3-e0f28d8b002b" />
+
 ---
 
 Wunero is an open, lightweight wishlist app designed to collect, organize, and share wishes with others. The project is fully open source and welcomes contributions, extensions, and experimentation.
