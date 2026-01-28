@@ -1,17 +1,26 @@
+<p>
+<a href="https://github.com/XmlmXmlmX/wunero/actions/workflows/docker-build.yml">
+    <img src="https://github.com/XmlmXmlmX/wunero/actions/workflows/docker-build.yml/badge.svg" alt="Build and Push to Docker Hub" />
+</a>
+<a href="https://github.com/XmlmXmlmX/wunero/issues">
+    <img src="https://img.shields.io/github/issues/XmlmXmlmX/wunero" alt="Issues" />
+</a>
+<a href="https://github.com/XmlmXmlmX/wunero/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/XmlmXmlmX/wunero" alt="License" />
+</a>
+<a href="https://hub.docker.com/repository/docker/sebastianhoesl/wunero">
+    <img src="https://img.shields.io/docker/pulls/sebastianhoesl/wunero" alt="Docker Pulls" />
+</a>
+<img src="https://img.shields.io/badge/TrueNAS_SCALE-supported-blue" alt="TrueNAS SCALE Support" />
+<img src="https://img.shields.io/badge/status-experimental-orange" alt="Project Status" />
+</p>
+
+---
+
 <p align="center">
     <img src="/src/assets/logo.svg" alt="Wunero Logo" width="220" style="background:black; border-radius:.75rem;border:1px solid"/>
 </p>
 <p align="center">Joy starts with a wish.</p>
-<p align="center">
-    [![Build and Push to Docker Hub](https://github.com/XmlmXmlmX/wunero/actions/workflows/docker-build.yml/badge.svg)](https://github.com/XmlmXmlmX/wunero/actions/workflows/docker-build.yml)
-    <a href="https://github.com/XmlmXmlmX/wunero/issues">
-        <img src="https://img.shields.io/github/issues/XmlmXmlmX/wunero" alt="Issues" />
-    </a>
-    <a href="https://github.com/XmlmXmlmX/wunero/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/XmlmXmlmX/wunero" alt="License" />
-    </a>
-    <img src="https://img.shields.io/badge/status-experimental-orange" alt="Project Status" />
-</p>
 
 ---
 
@@ -73,6 +82,49 @@ npm run dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and configure:
+
+#### Required (NextAuth)
+
+- `NEXTAUTH_SECRET` - Secret key for JWT encryption (min. 32 characters)
+  - Generate a secure secret: `openssl rand -base64 32`
+  - **Must be the same in `.env.local` and `docker-compose.yml`**
+- `NEXTAUTH_URL` - URL where the app is hosted (e.g., `http://localhost:3000` for dev, `https://yourdomain.com` for production)
+
+#### Optional (OAuth Providers - Beta)
+
+⚠️ **Beta Feature**: OAuth providers are currently untested. Use at your own risk.
+
+If you want to enable social logins, create OAuth apps and add:
+
+- **Google**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- **Facebook**: `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`
+- **Microsoft Azure AD**: `AZURE_AD_CLIENT_ID`, `AZURE_AD_CLIENT_SECRET`, `AZURE_AD_TENANT_ID`
+
+#### Database
+
+- `DB_PATH` - Path to database directory (default: `./data`)
+
+### Production Deployment
+
+1. Generate a strong secret:
+```bash
+openssl rand -base64 32
+```
+
+2. Update environment variables:
+   - Set `NEXTAUTH_SECRET` to the generated value in both `.env` and `docker-compose.yml`
+   - Set `NEXTAUTH_URL` to your production domain
+   - Add OAuth credentials if needed
+
+3. Ensure database persistence:
+   - Docker volume `wunero-data` is configured in `docker-compose.yml`
+   - Back up the database file regularly
 
 ## 🗂️ Project Structure
 
