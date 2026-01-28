@@ -51,10 +51,32 @@ export async function sendEmail({ to, subject, html, from = 'onboarding@resend.d
 }
 
 /**
+ * Get the base URL for the application
+ * Uses NEXTAUTH_URL if available, otherwise tries to construct from request headers
+ */
+function getBaseUrl(): string {
+  // Prefer explicit NEXTAUTH_URL
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  
+  // Fallback to Vercel URL
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  
+  // Development fallback
+  return 'http://localhost:3000';
+}
+
+/**
  * Send a verification email with a token
  */
 export async function sendVerificationEmail(email: string, token: string) {
-  const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${token}`;
+  const baseUrl = getBaseUrl();
+  const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}`;
+  
+  console.log('🔗 Verification URL:', verificationUrl);
   
   const html = `
     <!DOCTYPE html>
@@ -117,7 +139,10 @@ export async function sendVerificationEmail(email: string, token: string) {
  * Send a password reset email
  */
 export async function sendPasswordResetEmail(email: string, token: string) {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${token}`;
+  const baseUrl = getBaseUrl();
+  const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
+  
+  console.log('🔗 Reset URL:', resetUrl);
   
   const html = `
     <!DOCTYPE html>
