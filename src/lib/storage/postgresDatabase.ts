@@ -5,7 +5,7 @@
 
 import { sql } from '@vercel/postgres';
 import type { Database, PreparedStatement } from './database';
-import { DATABASE_SCHEMA, DATABASE_INDEXES } from './database';
+import { getDatabaseSchema, DATABASE_INDEXES } from './database';
 
 // Helper to convert SQLite-style ? placeholders to PostgreSQL $1, $2, etc.
 function convertPlaceholders(query: string): string {
@@ -33,8 +33,9 @@ async function execMultiple(sqlString: string): Promise<void> {
 
 // Postgres adapter that mimics better-sqlite3 API
 export async function createPostgresAdapter(): Promise<Database> {
-  // Initialize schema - run statements individually
-  await execMultiple(DATABASE_SCHEMA);
+  // Initialize schema with BIGINT for timestamps - run statements individually
+  const schema = getDatabaseSchema('postgres');
+  await execMultiple(schema);
   await execMultiple(DATABASE_INDEXES);
 
   console.log('✓ Using Vercel Postgres');

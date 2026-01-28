@@ -15,28 +15,31 @@ export interface Database {
   exec: (sqlString: string) => Promise<void>;
 }
 
-// Shared database schema
-export const DATABASE_SCHEMA = `
+// Generate database schema based on engine (SQLite uses INTEGER, PostgreSQL needs BIGINT for timestamps)
+export function getDatabaseSchema(engine: 'sqlite' | 'postgres'): string {
+  const timestampType = engine === 'postgres' ? 'BIGINT' : 'INTEGER';
+  
+  return `
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    created_at INTEGER NOT NULL,
+    created_at ${timestampType} NOT NULL,
     avatar_url TEXT,
     name TEXT,
     preferred_currency TEXT DEFAULT 'EUR',
     email_verified INTEGER DEFAULT 0,
-    email_verified_at INTEGER,
+    email_verified_at ${timestampType},
     verification_token TEXT,
-    verification_token_expires INTEGER
+    verification_token_expires ${timestampType}
   );
 
   CREATE TABLE IF NOT EXISTS wishlists (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL,
+    created_at ${timestampType} NOT NULL,
+    updated_at ${timestampType} NOT NULL,
     user_id TEXT NOT NULL DEFAULT 'anonymous',
     is_private INTEGER DEFAULT 0
   );
@@ -51,8 +54,8 @@ export const DATABASE_SCHEMA = `
     price TEXT,
     priority INTEGER DEFAULT 0,
     purchased INTEGER DEFAULT 0,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL,
+    created_at ${timestampType} NOT NULL,
+    updated_at ${timestampType} NOT NULL,
     quantity INTEGER DEFAULT 1,
     importance TEXT DEFAULT 'would-love',
     currency TEXT DEFAULT 'EUR',
@@ -64,11 +67,15 @@ export const DATABASE_SCHEMA = `
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     wishlist_id TEXT NOT NULL,
-    created_at INTEGER NOT NULL,
+    created_at ${timestampType} NOT NULL,
     FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE,
     UNIQUE(user_id, wishlist_id)
   );
 `;
+}
+
+// Shared database schema (deprecated - use getDatabaseSchema instead)
+export const DATABASE_SCHEMA = getDatabaseSchema('sqlite');
 
 export const DATABASE_INDEXES = `
   CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
