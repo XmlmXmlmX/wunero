@@ -14,13 +14,15 @@ interface ImportedItem {
 }
 
 interface WuImportAmazonWishlistFormProps extends Omit<WuOrganism<HTMLDivElement>, 'onSubmit'> {
-  onSuccess?: (items: ImportedItem[]) => void;
+  onSuccess?: (items: ImportedItem[], targetWishlistId?: string, wishlistName?: string | null) => void;
   onCancel?: () => void;
+  targetWishlistId?: string;
 }
 
 export function WuImportAmazonWishlistForm({ 
   onSuccess, 
   onCancel, 
+  targetWishlistId,
   className, 
   ...rest 
 }: WuImportAmazonWishlistFormProps) {
@@ -29,6 +31,7 @@ export function WuImportAmazonWishlistForm({
   const [error, setError] = useState<string | null>(null);
   const [importedItems, setImportedItems] = useState<ImportedItem[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [wishlistName, setWishlistName] = useState<string | null>(null);
 
   const handleImport = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -64,6 +67,7 @@ export function WuImportAmazonWishlistForm({
       }));
 
       setImportedItems(items);
+      setWishlistName(data.name || null);
       setShowPreview(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to import Amazon wishlist');
@@ -90,10 +94,11 @@ export function WuImportAmazonWishlistForm({
   const handleConfirm = () => {
     const selectedItems = importedItems.filter(item => item.selected);
     if (selectedItems.length > 0) {
-      onSuccess?.(selectedItems);
+      onSuccess?.(selectedItems, targetWishlistId, wishlistName);
       setUrl("");
       setImportedItems([]);
       setShowPreview(false);
+      setWishlistName(null);
     }
   };
 
@@ -149,6 +154,9 @@ export function WuImportAmazonWishlistForm({
       ) : (
         <div className={styles.preview}>
           <div className={styles.previewHeader}>
+            {wishlistName && (
+              <h3 className={styles.previewTitle}>{wishlistName}</h3>
+            )}
             <p className={styles.previewInfo}>
               Found {importedItems.length} items. Select the items you want to import:
             </p>

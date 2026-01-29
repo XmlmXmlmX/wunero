@@ -1,5 +1,5 @@
 import { WuButton, WuButtonLink, WuBadge } from "@/components/atoms";
-import { sanitizeUrl, isValidImageUrl } from "@/lib/urlUtils";
+import { sanitizeUrl, isValidImageUrl, getIconHorseUrl } from "@/lib/urlUtils";
 import { getShopName } from "@/lib/productParser";
 import { type WishItem, type WishItemImportance, type Currency } from "@/types";
 import { type WuMolecule } from "@/types/WuMolecule";
@@ -101,13 +101,6 @@ export function WuItemCard({
               {item.currency ? currencySymbols[item.currency] : '€'} {item.price}
             </p>
           )}
-
-          {showUrl && (
-            <div><WuButtonLink href={showUrl} target="_blank" rel="noopener noreferrer" variant="ghost">
-              View on {getShopName(item.url!)} <ExternalLinkIcon />
-            </WuButtonLink></div>
-          )}
-
         </div>
           
         {isOwner && (onMoveUp || onMoveDown) && (
@@ -134,6 +127,11 @@ export function WuItemCard({
         )}
       </div>
       <div className={styles.actions}>
+        {showUrl && (
+          <div className={styles.bottomLinks}><WuButtonLink href={showUrl} target="_blank" rel="noopener noreferrer" variant="ghost" style={{ '--icon-horse-url': `url(${getIconHorseUrl(item.url!)})` } as React.CSSProperties} className={styles.horseIcon}>
+            View on {getShopName(item.url!)} <ExternalLinkIcon />
+          </WuButtonLink></div>
+        )}
         <WuButton
           type="button"
           variant={isFullyPurchased ? "outline" : "secondary"}

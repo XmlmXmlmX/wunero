@@ -49,3 +49,12 @@ export function isValidImageUrl(url: string | undefined): boolean {
     return false;
   }
 }
+
+export function getIconHorseUrl(url: string): string {
+  try {
+    const hostname = (new URL(url)).hostname.toLowerCase();
+    return `https://icon.horse/icon/${hostname}`;
+  } catch {
+    return '';
+  }
+}

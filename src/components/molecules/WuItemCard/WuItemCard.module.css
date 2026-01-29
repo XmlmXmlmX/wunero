@@ -164,3 +164,23 @@
   height: 2rem;
   transform: translate(-2rem, -2rem);
 }
+
+.bottomLinks {
+  flex-grow: 1;
+  margin-inline-start: .75rem;
+}
+
+a.horseIcon {
+  display: inline-flex;
+  align-items: center;
+}
+
+a.horseIcon::before {
+  content: '';
+  background: var(--icon-horse-url, none) no-repeat center center;
+  background-size: 1em;
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  align-self: self-end;
+}

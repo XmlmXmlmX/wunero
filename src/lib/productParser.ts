@@ -260,50 +260,21 @@ export function isSupportedPlatform(url: string): boolean {
     return false;
   }
 }
+
 /**
- * Extract shop name from URL
+ * Extract shop name from URL - parses second-level domain
+ * CSS handles capitalization via text-transform
+ * Examples: amazon.de → amazon, ebay.co.uk → ebay, etsy.com → etsy
  */
 export function getShopName(url: string): string {
   try {
-    const urlObj = new URL(url);
-    const hostname = urlObj.hostname.toLowerCase();
+    const hostname = (new URL(url)).hostname.toLowerCase();
     
     // Remove www. prefix
     const domain = hostname.replace(/^www\./, '');
     
-    // Extract the main domain name
-    const parts = domain.split('.');
-    
-    // Special cases for known shops
-    if (domain.includes('amazon.')) {
-      return 'Amazon';
-    }
-    if (domain.includes('ebay.')) {
-      return 'eBay';
-    }
-    if (domain.includes('idealo.')) {
-      return 'idealo';
-    }
-    if (domain.includes('etsy.')) {
-      return 'Etsy';
-    }
-    if (domain.includes('aliexpress.')) {
-      return 'AliExpress';
-    }
-    if (domain.includes('alibaba.')) {
-      return 'Alibaba';
-    }
-    if (domain.includes('wish.')) {
-      return 'Wish';
-    }
-    if (domain.includes('shopify.')) {
-      const shop = parts[0];
-      return shop.charAt(0).toUpperCase() + shop.slice(1);
-    }
-    
-    // Generic: take first part before TLD
-    const shopName = parts[0];
-    return shopName.charAt(0).toUpperCase() + shopName.slice(1);
+    // Get the second-level domain (first part before the first dot)
+    return domain.split('.')[0];
   } catch {
     return 'Product';
   }

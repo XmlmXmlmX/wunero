@@ -17,6 +17,52 @@ export interface AmazonWishlistItem {
 }
 
 /**
+ * Extract wishlist name from Amazon HTML
+ */
+function extractWishlistName(html: string): string | null {
+  const $ = cheerio.load(html);
+  
+  // Try the most specific selector first
+  const element = $('#profile-list-name');
+  if (element.length > 0) {
+    const text = element.first().text().trim();
+    if (text && text.length > 0) {
+      return text;
+    }
+  }
+
+  // Try other Amazon wishlist title selectors
+  const selectors = [
+    '[data-a-target="wish-list-name"]',
+    '.a-spacing-mini.a-spacing-top-base h1',
+    '.a-spacing-mini h1',
+    '.a-box-inner h1'
+  ];
+
+  for (const selector of selectors) {
+    const el = $(selector);
+    if (el.length > 0) {
+      const text = el.first().text().trim();
+      // Filter out unwanted content like shipping addresses and generic Amazon messages
+      if (text && text.length > 0 && 
+          !text.includes('Lieferung') && 
+          !text.includes('Delivery') &&
+          !text.includes('Sieh dir meine Liste')) {
+        return text;
+      }
+    }
+  }
+
+  // Try to extract from meta tags
+  const metaTitle = $('meta[property="og:title"]').attr('content');
+  if (metaTitle && metaTitle.length > 0 && !metaTitle.includes('Sieh dir meine Liste')) {
+    return metaTitle;
+  }
+
+  return null;
+}
+
+/**
  * Extract price and currency from Amazon price string
  */
 function extractPriceAndCurrency(priceText: string): { price?: string; currency?: Currency } {
@@ -68,7 +114,7 @@ function validateAmazonWishlistUrl(url: string): boolean {
 /**
  * Parse Amazon wishlist and extract items
  */
-async function parseAmazonWishlist(url: string): Promise<AmazonWishlistItem[]> {
+async function parseAmazonWishlist(url: string): Promise<{ name: string | null; items: AmazonWishlistItem[] }> {
   try {
     console.log(`Fetching Amazon wishlist: ${url}`);
     
@@ -86,6 +132,9 @@ async function parseAmazonWishlist(url: string): Promise<AmazonWishlistItem[]> {
     }
 
     const html = await response.text();
+    
+    // Extract wishlist name
+    const wishlistName = extractWishlistName(html);
     const $ = cheerio.load(html);
 
     const items: AmazonWishlistItem[] = [];
@@ -113,51 +162,66 @@ async function parseAmazonWishlist(url: string): Promise<AmazonWishlistItem[]> {
 
     if (!itemElements || itemElements.length === 0) {
       console.warn('No items found with any selector');
-      return items;
+      return { name: wishlistName, items };
     }
 
     itemElements.each((_, element) => {
       const $item = $(element);
       
-      // Extract title
-      const title = $item.find('h3 a, h5 a, [id*="itemName"] a').first().text().trim() ||
-                    $item.find('a[title]').first().attr('title')?.trim() ||
-                    '';
-
+      // Extract title - handle both regular products and keyword items (text-only items)
+      // For keyword items: <span id="keyword-text-value-*"> or <span id="itemName_*">
+      // For regular products: h3/h5 a or [id*="itemName"]
+      let title = '';
+      
+      // Try to find title in span elements with keyword or itemName in the ID
+      $item.find('span').each((_, spanEl) => {
+        const spanId = $(spanEl).attr('id') || '';
+        if (spanId.includes('keyword-text-value') || spanId.includes('itemName')) {
+          const text = $(spanEl).text().trim();
+          if (text && text.length > 2) { // Must have meaningful length
+            title = text;
+            return false; // break
+          }
+        }
+      });
+      
+      // Fallback to regular product selectors
       if (!title) {
+        title = $item.find('h3 a, h5 a').first().text().trim();
+      }
+      
+      // Fallback to link title attribute
+      if (!title) {
+        title = $item.find('a[title]').first().attr('title')?.trim() || '';
+      }
+      
+      if (!title) {
+        console.warn('Item has no title, skipping');
         return; // Skip items without title
       }
 
-      // Extract description/comment
+      // Extract description/comment (only the actual comment, not priority/quantity info)
       let description: string | undefined;
-      const descriptionSelectors = [
-        '[id*="itemComment"]',
-        '[id*="itemNote"]',
-        '.a-spacing-small.a-size-base',
-        'span[class*="comment"]',
-        'div[class*="comment"]',
-        '[data-itemcomment]'
-      ];
       
-      for (const selector of descriptionSelectors) {
-        const descElement = $item.find(selector).first();
-        if (descElement.length > 0) {
-          const descText = descElement.text().trim();
-          // Filter out price and other non-comment text
-          if (descText && 
-              !descText.match(/^[\d.,€£$]+$/) && 
-              descText.length > 3 &&
-              !descText.toLowerCase().includes('add to cart')) {
-            description = descText;
-            break;
-          }
+      // Try to find the item comment specifically
+      const commentElement = $item.find('[id*="itemComment"]').first();
+      if (commentElement.length > 0) {
+        const commentText = commentElement.text().trim();
+        // Only use it if it's not empty and doesn't contain the metadata we don't want
+        if (commentText && 
+            !commentText.includes('Wie sehr gewünscht') &&
+            !commentText.includes('Würde mich freuen') &&
+            !commentText.includes('Benötigt') &&
+            !commentText.includes('Hat:') &&
+            commentText.length > 3) {
+          description = commentText;
         }
       }
       
-      // Also check data attribute
+      // Also try data attribute as fallback
       if (!description) {
         const dataComment = $item.attr('data-itemcomment') || $item.find('[data-itemcomment]').first().attr('data-itemcomment');
-        if (dataComment && dataComment.trim()) {
+        if (dataComment && dataComment.trim() && !dataComment.includes('Wie sehr gewünscht')) {
           description = dataComment.trim();
         }
       }
@@ -172,6 +236,7 @@ async function parseAmazonWishlist(url: string): Promise<AmazonWishlistItem[]> {
       }
 
       // Extract image URL - Amazon uses multiple attributes for images
+      // But skip Amazon placeholder/icon images (used for keyword items)
       let imageUrl = $item.find('img').first().attr('src') ||
                      $item.find('img').first().attr('data-src') ||
                      $item.find('img').first().attr('data-a-dynamic-image') ||
@@ -193,8 +258,13 @@ async function parseAmazonWishlist(url: string): Promise<AmazonWishlistItem[]> {
         }
       }
       
+      // Check if this is a keyword item (text-only, no real product)
+      // Keyword items have no product URL or have keyword-specific Amazon icons
+      const isKeywordItem = !productUrl || 
+                            (imageUrl && (imageUrl.includes('Keyword_Icon') || imageUrl.includes('wfa_idea')));
+      
       // Amazon often uses low-res images, try to get higher resolution
-      if (imageUrl) {
+      if (imageUrl && !isKeywordItem) {
         // Remove low-res indicators and replace with higher res
         imageUrl = imageUrl.replace(/_SL\d+_/, '_SL500_');
         imageUrl = imageUrl.replace(/_AC_UL\d+_/, '_AC_UL500_');
@@ -207,6 +277,9 @@ async function parseAmazonWishlist(url: string): Promise<AmazonWishlistItem[]> {
           const urlObj = new URL(url);
           imageUrl = `${urlObj.protocol}//${urlObj.hostname}${imageUrl}`;
         }
+      } else {
+        // Use fallback image for keyword items or items without images
+        imageUrl = '/images/placeholder-wishlist-item.svg';
       }
 
       // Extract price - try multiple selectors
@@ -340,7 +413,7 @@ async function parseAmazonWishlist(url: string): Promise<AmazonWishlistItem[]> {
     });
 
     console.log(`Extracted ${items.length} items from Amazon wishlist`);
-    return items;
+    return { name: wishlistName, items };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
       throw new Error('Request timed out - Amazon may be blocking automated requests');
@@ -372,19 +445,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const items = await parseAmazonWishlist(url);
+    const { name, items } = await parseAmazonWishlist(url);
 
     if (items.length === 0) {
       return NextResponse.json(
         { 
           error: 'No items found in the wishlist. Make sure the wishlist is public and contains items.',
-          items: []
+          items: [],
+          name: null
         },
         { status: 200 }
       );
     }
 
-    return NextResponse.json({ items });
+    return NextResponse.json({ items, name });
   } catch (error) {
     console.error('Error importing Amazon wishlist:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to import Amazon wishlist';

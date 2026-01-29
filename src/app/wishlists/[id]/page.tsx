@@ -5,6 +5,7 @@ import { WuButton, WuButtonLink, WuInput, WuTextArea } from "@/components/atoms"
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
 import { WuItemCard } from "@/components/molecules/WuItemCard/WuItemCard";
 import { WuItemForm } from "@/components/organisms/WuItemForm/WuItemForm";
+import { WuImportAmazonWishlistForm } from "@/components/organisms/WuImportAmazonWishlistForm/WuImportAmazonWishlistForm";
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
 import type { WishItem, Wishlist } from "@/types";
 import styles from "./page.module.css";
@@ -13,6 +14,7 @@ import LockIcon from "@/components/ui/lock-icon";
 import WorldIcon from "@/components/ui/world-icon";
 import PenIcon from "@/components/ui/pen-icon";
 import { PlusIcon } from "lucide-react";
+import ArrowBigDownDashIcon from "@/components/ui/arrow-big-down-dash-icon";
 
 export default function WishlistDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -20,6 +22,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
   const [items, setItems] = useState<WishItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -110,6 +113,52 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
       }
     } catch (error) {
       console.error("Error creating item:", error);
+    }
+  };
+
+  const handleImportAmazon = async (importedItems: Array<{
+    title: string;
+    url?: string;
+    image_url?: string;
+    price?: string;
+    currency?: string;
+    quantity?: number;
+    priority?: number;
+    importance?: string;
+    purchased_quantity?: number;
+    description?: string;
+  }>) => {
+    try {
+      // Add imported items to this wishlist
+      for (const item of importedItems) {
+        const response = await fetch(`/api/wishlists/${id}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: item.title,
+            description: item.description,
+            url: item.url,
+            image_url: item.image_url,
+            price: item.price,
+            currency: item.currency,
+            quantity: item.quantity ?? 1,
+            priority: item.priority ?? 0,
+            importance: item.importance ?? "nice-to-have",
+            purchased_quantity: item.purchased_quantity ?? 0,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          console.error(`Failed to import item "${item.title}":`, error);
+        }
+      }
+
+      setShowImportForm(false);
+      loadItems();
+    } catch (error) {
+      console.error("Error importing Amazon wishlist:", error);
+      alert("Failed to import items");
     }
   };
 
@@ -392,15 +441,40 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
           <div className={styles.itemsHeader}>
             <h2>Items</h2>
             {isOwner && (
-              <WuButton
-                type="button"
-                variant={showNewForm ? "outline" : "primary"}
-                onClick={() => setShowNewForm(!showNewForm)}
-              >
-                {showNewForm ? "Cancel" : <><PlusIcon />Add Item</>}
-              </WuButton>
+              <div className={styles.itemsActions}>
+                <WuButton
+                  type="button"
+                  variant={showImportForm ? "outline" : "ghost"}
+                  onClick={() => {
+                    setShowImportForm(!showImportForm);
+                    setShowNewForm(false);
+                  }}
+                >
+                  {showImportForm ? "Cancel" : <><ArrowBigDownDashIcon /> Import</>}
+                </WuButton>
+                <WuButton
+                  type="button"
+                  variant={showNewForm ? "outline" : "primary"}
+                  onClick={() => {
+                    setShowNewForm(!showNewForm);
+                    setShowImportForm(false);
+                  }}
+                >
+                  {showNewForm ? "Cancel" : <><PlusIcon />Add Item</>}
+                </WuButton>
+              </div>
             )}
           </div>
+
+          {showImportForm && (
+            <div className={styles.section}>
+              <WuImportAmazonWishlistForm 
+                targetWishlistId={id}
+                onSuccess={handleImportAmazon}
+                onCancel={() => setShowImportForm(false)} 
+              />
+            </div>
+          )}
 
           {showNewForm && (
             <div className={styles.section}>

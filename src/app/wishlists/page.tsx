@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { nanoid } from "nanoid";
 import { WuButton } from "@/components/atoms";
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
 import { WuWishlistCard } from "@/components/molecules/WuWishlistCard/WuWishlistCard";
@@ -12,6 +11,7 @@ import { WuFollowWishlistForm } from "@/components/organisms/WuFollowWishlistFor
 import { WuImportAmazonWishlistForm } from "@/components/organisms/WuImportAmazonWishlistForm/WuImportAmazonWishlistForm";
 import type { Wishlist } from "@/types";
 import styles from "./page.module.css";
+import ArrowBigDownDashIcon from "@/components/ui/arrow-big-down-dash-icon";
 
 export default function WishlistsPage() {
   const router = useRouter();
@@ -64,29 +64,45 @@ export default function WishlistsPage() {
     }
   };
 
-  const handleImportAmazon = async (items: any[]) => {
+  const handleImportAmazon = async (items: Array<{
+    title: string;
+    url?: string;
+    image_url?: string;
+    price?: string;
+    currency?: string;
+    quantity?: number;
+    priority?: number;
+    importance?: string;
+    purchased_quantity?: number;
+    description?: string;
+  }>, targetWishlistId?: string, wishlistName?: string | null) => {
     try {
-      // Create a new wishlist for the imported items
-      const wishlistTitle = `Imported from Amazon (${new Date().toLocaleDateString()})`;
-      const createResponse = await fetch("/api/wishlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          title: wishlistTitle,
-          description: "Items imported from Amazon wishlist" 
-        }),
-      });
+      let wishlistId = targetWishlistId;
+      
+      // Wenn keine Ziel-Wishlist angegeben, neue erstellen
+      if (!wishlistId) {
+        const title = wishlistName || `Imported from Amazon (${new Date().toLocaleDateString()})`;
+        const createResponse = await fetch("/api/wishlists", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            title,
+            description: "Items imported from Amazon wishlist" 
+          }),
+        });
 
-      if (!createResponse.ok) {
-        alert("Failed to create wishlist for imported items");
-        return;
+        if (!createResponse.ok) {
+          alert("Failed to create wishlist for imported items");
+          return;
+        }
+
+        const newWishlist = await createResponse.json();
+        wishlistId = newWishlist.id;
       }
-
-      const newWishlist = await createResponse.json();
 
       // Add each imported item to the new wishlist
       for (const item of items) {
-        await fetch(`/api/wishlists/${newWishlist.id}/items`, {
+        const response = await fetch(`/api/wishlists/${wishlistId}/items`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -102,13 +118,20 @@ export default function WishlistsPage() {
             purchased_quantity: item.purchased_quantity ?? 0,
           }),
         });
+
+        if (!response.ok) {
+          const error = await response.json();
+          console.error(`Failed to import item "${item.title}":`, error);
+        }
       }
 
       setShowImportForm(false);
       loadWishlists();
       
-      // Navigate to the newly created wishlist
-      router.push(`/wishlists/${newWishlist.id}`);
+      // Navigate zu der Wishlist (neue oder existierende)
+      if (!targetWishlistId) {
+        router.push(`/wishlists/${wishlistId}`);
+      }
     } catch (error) {
       console.error("Error importing Amazon wishlist:", error);
       alert("Failed to import items");
@@ -170,7 +193,7 @@ export default function WishlistsPage() {
                     setShowFollowForm(false);
                   }}
                 >
-                  {showImportForm ? "Cancel" : "📦 Import"}
+                  {showImportForm ? "Cancel" : <><ArrowBigDownDashIcon /> Import</>}
                 </WuButton>
                 <WuButton
                   type="button"

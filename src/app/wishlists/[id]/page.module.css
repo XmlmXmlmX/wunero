@@ -49,6 +49,12 @@
   margin-bottom: 1rem;
 }
 
+.itemsActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
 .itemsList {
   display: flex;
   flex-direction: column;
@@ -96,5 +102,10 @@
   .actions {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .itemsActions {
+    width: 100%;
+    flex-direction: column;
   }
 }
