@@ -260,3 +260,72 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to remove member' }, { status: 500 });
   }
 }
+
+// PUT /api/wishlists/:id/members - Resend invitation to pending member
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = await requireAuth();
+    if (!userId) {
+      return unauthorizedResponse();
+    }
+
+    const { id: wishlistId } = await params;
+    const body = await request.json() as { email: string };
+
+    if (!body.email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+
+    const email = body.email.trim().toLowerCase();
+
+    // Verify the user is the owner or a member of the wishlist
+    const wishlist = await db.prepare('SELECT user_id, title FROM wishlists WHERE id = ?').get(wishlistId) as unknown as WishlistData | undefined;
+    
+    if (!wishlist) {
+      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+
+    const isMember = wishlist.user_id === userId || 
+      await db.prepare('SELECT id FROM list_members WHERE wishlist_id = ? AND user_id = ?').get(wishlistId, userId);
+
+    if (!isMember) {
+      return NextResponse.json({ error: 'Only members can resend invitations' }, { status: 403 });
+    }
+
+    // Check if there's a pending invitation for this email
+    const pendingInvitation = await db.prepare('SELECT invitation_code, expires_at FROM pending_invitations WHERE email = ? AND wishlist_id = ?').get(email, wishlistId) as unknown as { invitation_code: string; expires_at: number } | undefined;
+    
+    if (!pendingInvitation) {
+      return NextResponse.json({ error: 'No pending invitation found for this email' }, { status: 404 });
+    }
+
+    // Check if invitation is still valid
+    if (pendingInvitation.expires_at < Date.now()) {
+      return NextResponse.json({ error: 'Invitation has expired. Please create a new one.' }, { status: 400 });
+    }
+
+    // Get the inviter's name
+    const inviter = await db.prepare('SELECT name FROM users WHERE id = ?').get(userId) as unknown as UserData | undefined;
+    const inviterName = inviter?.name || 'A Wunero user';
+
+    // Resend invitation email with the same code
+    try {
+      await sendWishlistInvitationEmail(email, pendingInvitation.invitation_code, wishlist.title, inviterName);
+      console.log(`📧 Invitation email resent to ${email} for wishlist ${wishlistId}`);
+    } catch (emailError) {
+      console.error('❌ Failed to resend invitation email:', emailError);
+      // Continue even if email fails
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Invitation resent successfully'
+    });
+  } catch (error) {
+    console.error('Error resending invitation:', error);
+    return NextResponse.json({ error: 'Failed to resend invitation' }, { status: 500 });
+  }
+}

@@ -34,6 +34,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
   const [membersLoading, setMembersLoading] = useState(false);
   const [memberEmail, setMemberEmail] = useState("");
   const [memberError, setMemberError] = useState<string | null>(null);
+  const [resendingInvitation, setResendingInvitation] = useState<string | null>(null);
 
   const loadWishlist = useCallback(async () => {
     try {
@@ -435,6 +436,30 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     }
   };
 
+  const resendInvitation = async (memberEmail: string) => {
+    setResendingInvitation(memberEmail);
+    try {
+      const response = await fetch(`/api/wishlists/${id}/members`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: memberEmail }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error?.error || "Failed to resend invitation");
+        return;
+      }
+
+      alert("Invitation resent successfully!");
+    } catch (error) {
+      console.error("Error resending invitation:", error);
+      alert("Failed to resend invitation");
+    } finally {
+      setResendingInvitation(null);
+    }
+  };
+
   const titleWithMembers = useMemo(() => {
     return (
       <div className={styles.titleRow}>
@@ -539,11 +564,23 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                                 {member.name && <div className={styles.memberEmail}>{member.email}</div>}
                               </div>
                             </div>
-                            {member.id !== wishlist.user_id && (
-                              <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
-                                Remove
-                              </WuButton>
-                            )}
+                            <div className={styles.memberActions}>
+                              {isPending && (
+                                <WuButton 
+                                  type="button" 
+                                  variant="outline" 
+                                  onClick={() => resendInvitation(member.email)}
+                                  disabled={resendingInvitation === member.email}
+                                >
+                                  {resendingInvitation === member.email ? "Resending..." : "Resend"}
+                                </WuButton>
+                              )}
+                              {member.id !== wishlist.user_id && (
+                                <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
+                                  Remove
+                                </WuButton>
+                              )}
+                            </div>
                           </li>
                         );
                       })}

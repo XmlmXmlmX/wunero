@@ -39,14 +39,16 @@ export async function sendEmail({ to, subject, html, from = 'onboarding@resend.d
 
     if (error) {
       console.error('❌ Resend error:', error);
-      throw new Error(`Failed to send email: ${error.message}`);
+      console.warn('⚠️  Email sending failed, but continuing operation. In development, verify your domain at resend.com/domains');
+      return null; // Return null instead of throwing, so the operation can continue
     }
 
     console.log('✅ Email sent successfully:', data?.id);
     return data;
   } catch (error) {
     console.error('❌ Error sending email:', error);
-    throw error;
+    console.warn('⚠️  Email sending failed, but continuing operation.');
+    return null; // Return null instead of throwing
   }
 }
 

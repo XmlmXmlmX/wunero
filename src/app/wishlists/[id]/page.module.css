@@ -225,6 +225,12 @@
   border-color: #fcd34d;
 }
 
+.memberActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .memberHint {
   font-size: 0.9rem;
   color: #6b7280;
