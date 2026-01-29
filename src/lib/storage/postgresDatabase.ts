@@ -1,9 +1,9 @@
 /**
  * Postgres Database Adapter
- * Uses @vercel/postgres for Vercel deployments
+ * Uses @neondatabase/serverless for Postgres deployments
  */
 
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 import type { Database, PreparedStatement } from './database';
 import { getDatabaseSchema, DATABASE_INDEXES } from './database';
 
@@ -14,7 +14,7 @@ function convertPlaceholders(query: string): string {
 }
 
 // Helper to split and execute multiple SQL statements
-async function execMultiple(sqlString: string): Promise<void> {
+async function execMultiple(sql: ReturnType<typeof neon<false, false>>, sqlString: string): Promise<void> {
   // Split by semicolon but keep them intact, handle multi-line statements
   const statements = sqlString
     .split(';')
@@ -23,7 +23,7 @@ async function execMultiple(sqlString: string): Promise<void> {
 
   for (const statement of statements) {
     try {
-      await sql.query(statement);
+      await sql(statement);
     } catch (error) {
       console.error('SQL Error:', statement, error);
       throw error;
@@ -33,42 +33,42 @@ async function execMultiple(sqlString: string): Promise<void> {
 
 // Postgres adapter that mimics better-sqlite3 API
 export async function createPostgresAdapter(): Promise<Database> {
+  if (!process.env.POSTGRES_URL) {
+    throw new Error('POSTGRES_URL environment variable is required for Postgres adapter');
+  }
+
+  const sql = neon(process.env.POSTGRES_URL);
+
   // Initialize schema with BIGINT for timestamps - run statements individually
   const schema = getDatabaseSchema('postgres');
-  await execMultiple(schema);
-  await execMultiple(DATABASE_INDEXES);
+  await execMultiple(sql, schema);
+  await execMultiple(sql, DATABASE_INDEXES);
 
-  console.log('✓ Using Vercel Postgres');
+  console.log('✓ Using Neon Postgres');
 
   return {
     prepare<T = Record<string, unknown>>(query: string): PreparedStatement<T> {
       const pgQuery = convertPlaceholders(query);
       return {
         get: async (...params: unknown[]) => {
-          console.log('PG GET:', pgQuery, 'params:', params);
-          const result = await sql.query(pgQuery, params);
-          console.log('PG GET result rows:', result.rows.length);
-          return (result.rows[0] as T) || undefined;
+          const result = await sql(pgQuery, params);
+          return (result[0] as T) || undefined;
         },
         all: async (...params: unknown[]) => {
-          console.log('PG ALL:', pgQuery, 'params:', params);
-          const result = await sql.query(pgQuery, params);
-          console.log('PG ALL result rows:', result.rows.length);
-          return result.rows as T[];
+          const result = await sql(pgQuery, params);
+          return result as T[];
         },
         run: async (...params: unknown[]) => {
-          console.log('PG RUN:', pgQuery, 'params:', params);
-          const result = await sql.query(pgQuery, params);
-          console.log('PG RUN rowCount:', result.rowCount);
+          const result = await sql(pgQuery, params);
           return {
             lastInsertRowid: 0,
-            changes: result.rowCount ?? 0,
+            changes: result.length,
           };
         },
       };
     },
     async exec(sqlString: string) {
-      await execMultiple(sqlString);
+      await execMultiple(sql, sqlString);
     },
   };
 }

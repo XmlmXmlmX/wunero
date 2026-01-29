@@ -31,7 +31,9 @@ export function getDatabaseSchema(engine: 'sqlite' | 'postgres'): string {
     email_verified INTEGER DEFAULT 0,
     email_verified_at ${timestampType},
     verification_token TEXT,
-    verification_token_expires ${timestampType}
+    verification_token_expires ${timestampType},
+    reset_token TEXT,
+    reset_token_expires ${timestampType}
   );
 
   CREATE TABLE IF NOT EXISTS wishlists (

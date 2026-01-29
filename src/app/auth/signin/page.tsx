@@ -100,6 +100,12 @@ function SignInContent() {
             fullWidth
           />
 
+          <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+            <Link href="/auth/forgot-password" className={styles.link} style={{ fontSize: '0.875rem' }}>
+              Forgot password?
+            </Link>
+          </div>
+
           <WuButton
             type="submit"
             disabled={isLoading}

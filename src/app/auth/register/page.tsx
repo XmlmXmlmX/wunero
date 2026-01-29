@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { WuInput } from "@/components/atoms/WuInput/WuInput";
 import { WuButton } from "@/components/atoms/WuButton/WuButton";
@@ -10,23 +10,14 @@ import styles from "./page.module.css";
 import { WuButtonLink } from "@/components/atoms";
 import ArrowNarrowLeftIcon from "@/components/ui/arrow-narrow-left-icon";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [invitationInfo, setInvitationInfo] = useState<{ wishlistTitle?: string } | null>(null);
 
   const invitationCode = searchParams.get("invitation");
-
-  useEffect(() => {
-    // If there's an invitation code, we could fetch the invitation details here
-    if (invitationCode) {
-      // For now, we'll just show a message that they're joining via invitation
-      setInvitationInfo({ wishlistTitle: "a wishlist" });
-    }
-  }, [invitationCode]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -73,7 +64,7 @@ export default function RegisterPage() {
         {invitationCode && (
           <div className={`${styles.infoBox} ${styles.infoBoxInvitation}`}>
             <p className={styles.infoText}>
-              🎁 You've been invited to join {invitationInfo?.wishlistTitle || "a wishlist"}. Create your account to accept the invitation!
+              🎁 You've been invited to join a wishlist. Create your account to accept the invitation!
             </p>
           </div>
         )}
@@ -142,5 +133,22 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Create Account</h1>
+            <p className={styles.subtitle}>Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }

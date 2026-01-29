@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Auth Cookies</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 1rem;
+        }
+        button:hover {
+            background: #0060df;
+        }
+        .success {
+            color: #059669;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 Clear Authentication</h1>
+        <p>This will clear all NextAuth cookies and fix the JWT decryption error.</p>
+        <button onclick="clearCookies()">Clear Auth Cookies</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function clearCookies() {
+            // Clear all cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            // Clear localStorage and sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            document.getElementById('result').innerHTML = '<p class="success">✅ Cookies cleared! Redirecting to sign in...</p>';
+            
+            setTimeout(() => {
+                window.location.href = '/auth/signin';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
