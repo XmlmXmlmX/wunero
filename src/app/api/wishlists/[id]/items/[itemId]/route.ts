@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/storage';
 import { extractProductInfo } from '@/lib/productParser';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
+import { canEditWishlist } from '@/lib/wishlist-permissions';
 import type { WishItem, UpdateWishItemInput } from '@/types';
 
 // GET /api/wishlists/[id]/items/[itemId] - Get a specific item
@@ -54,11 +55,11 @@ export async function PATCH(
       return unauthorizedResponse();
     }
     
-    // Check if user is the owner
-    const isOwner = wishlist.user_id.toString() === userId;
+    // Check if user can edit (owner or member)
+    const canEdit = await canEditWishlist(id, userId);
     
-    // Only owner can edit item details, anyone can mark as purchased (if wishlist is public)
-    if (body.purchased !== undefined && !isOwner) {
+    // Only editors can edit item details, anyone can mark as purchased (if wishlist is public)
+    if (body.purchased !== undefined && !canEdit) {
       // Check if wishlist is private - if so, only owner can mark as purchased
       if (wishlist.is_private) {
         return NextResponse.json({ error: 'Cannot mark items as purchased in private wishlists' }, { status: 403 });
@@ -88,9 +89,9 @@ export async function PATCH(
       return NextResponse.json(updated);
     }
     
-    // Only owner can edit other fields
-    if (!isOwner) {
-      return NextResponse.json({ error: 'Only the owner can edit this item' }, { status: 403 });
+    // Only editors can edit other fields
+    if (!canEdit) {
+      return NextResponse.json({ error: 'Only members can edit this item' }, { status: 403 });
     }
     
     const updates: string[] = [];
@@ -208,9 +209,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
     
-    // Only the owner can delete items
-    if (wishlist.user_id.toString() !== userId) {
-      return NextResponse.json({ error: 'Only the owner can delete items' }, { status: 403 });
+    const canEdit = await canEditWishlist(id, userId);
+    if (!canEdit) {
+      return NextResponse.json({ error: 'Only members can delete items' }, { status: 403 });
     }
     
     await db.prepare('DELETE FROM wish_items WHERE id = ?').run(itemId);

@@ -71,6 +71,16 @@ export function getDatabaseSchema(engine: 'sqlite' | 'postgres'): string {
     FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE,
     UNIQUE(user_id, wishlist_id)
   );
+
+  CREATE TABLE IF NOT EXISTS list_members (
+    id TEXT PRIMARY KEY,
+    wishlist_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    created_at ${timestampType} NOT NULL,
+    FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(wishlist_id, user_id)
+  );
 `;
 }
 
@@ -84,4 +94,6 @@ export const DATABASE_INDEXES = `
   CREATE INDEX IF NOT EXISTS idx_wishlists_user_id ON wishlists(user_id);
   CREATE INDEX IF NOT EXISTS idx_followed_wishlists_user_id ON followed_wishlists(user_id);
   CREATE INDEX IF NOT EXISTS idx_followed_wishlists_wishlist_id ON followed_wishlists(wishlist_id);
+  CREATE INDEX IF NOT EXISTS idx_list_members_wishlist_id ON list_members(wishlist_id);
+  CREATE INDEX IF NOT EXISTS idx_list_members_user_id ON list_members(user_id);
 `;

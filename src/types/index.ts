@@ -26,6 +26,9 @@ export interface Wishlist {
   description?: string;
   is_private: number;
   items_count: number;
+  members_count?: number;
+  is_member?: boolean;
+  can_edit?: boolean;
   created_at: number;
   updated_at: number;
   followed_at?: number;

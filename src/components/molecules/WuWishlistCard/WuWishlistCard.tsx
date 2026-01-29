@@ -21,6 +21,14 @@ export function WuWishlistCard({ wishlist, onDelete, isFollowed = false, classNa
           <WuBadge variant="primary">
             {wishlist.items_count} Items
           </WuBadge>
+          {wishlist.members_count && wishlist.members_count > 0 ? (
+            <WuBadge variant="default">
+              {wishlist.members_count} Members
+            </WuBadge>
+          ) : null}
+          {wishlist.is_member ? (
+            <WuBadge variant="default">Shared</WuBadge>
+          ) : null}
           {wishlist.is_private ?
             <WuBadge variant="danger">
               <LockIcon />

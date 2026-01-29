@@ -7,6 +7,28 @@ interface WishlistRow extends Wishlist {
   items_count: number;
   is_private: number;
   user_id: string;
+  members_count?: number;
+}
+
+// Helper function to check if user is owner or member of wishlist
+async function canEditWishlist(wishlistId: string, userId: string): Promise<boolean> {
+  const wishlist = await db.prepare('SELECT user_id FROM wishlists WHERE id = ?').get(wishlistId) as { user_id: string } | undefined;
+  
+  if (!wishlist) return false;
+  
+  // Owner can always edit
+  if (wishlist.user_id === userId) return true;
+  
+  // Check if user is a member
+  const member = await db.prepare('SELECT id FROM list_members WHERE wishlist_id = ? AND user_id = ?').get(wishlistId, userId);
+  
+  return !!member;
+}
+
+interface WishlistRow extends Wishlist {
+  items_count: number;
+  is_private: number;
+  user_id: string;
 }
 
 // GET /api/wishlists/[id] - Get a specific wishlist (owner or follower can view)
@@ -22,9 +44,12 @@ export async function GET(
 
     const { id } = await params;
     const wishlist = await db.prepare<WishlistRow>(`
-      SELECT w.*, COUNT(wi.id) as items_count
+      SELECT w.*, 
+        COUNT(DISTINCT wi.id) as items_count,
+        COUNT(DISTINCT lm.user_id) as members_count
       FROM wishlists w
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
+      LEFT JOIN list_members lm ON w.id = lm.wishlist_id
       WHERE w.id = ?
       GROUP BY w.id
     `).get(id);
@@ -33,28 +58,35 @@ export async function GET(
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
-    // Check if user is owner or is following the wishlist
+    // Check if user is owner, member, or is following the wishlist
     const isOwner = wishlist.user_id.toString() === userId;
-    const isFollowing = await db.prepare('SELECT * FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
+    const isMember = await db.prepare('SELECT id FROM list_members WHERE user_id = ? AND wishlist_id = ?')
+      .get(userId, id);
+    const isFollowing = await db.prepare('SELECT id FROM followed_wishlists WHERE user_id = ? AND wishlist_id = ?')
       .get(userId, id);
 
-    // If wishlist is private and user is not the owner, deny access
-    if (wishlist.is_private && !isOwner) {
+    // If wishlist is private and user is not owner or member, deny access
+    if (wishlist.is_private && !isOwner && !isMember) {
       return forbiddenResponse();
     }
 
-    if (!isOwner && !isFollowing) {
+    if (!isOwner && !isMember && !isFollowing) {
       return forbiddenResponse();
     }
 
-    return NextResponse.json({ ...wishlist, is_owner: isOwner });
+    return NextResponse.json({
+      ...wishlist,
+      is_owner: isOwner,
+      is_member: Boolean(isMember),
+      can_edit: isOwner || Boolean(isMember),
+    });
   } catch (error) {
     console.error('Error fetching wishlist:', error);
     return NextResponse.json({ error: 'Failed to fetch wishlist' }, { status: 500 });
   }
 }
 
-// DELETE /api/wishlists/[id] - Delete a wishlist (only owner can delete)
+// DELETE /api/wishlists/[id] - Delete a wishlist (owner or members can delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -66,13 +98,10 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string } | undefined;
-
-    if (!wishlist) {
-      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
-    }
-
-    if (wishlist.user_id.toString() !== userId) {
+    
+    // Check if user can edit (is owner or member)
+    const canEdit = await canEditWishlist(id, userId);
+    if (!canEdit) {
       return forbiddenResponse();
     }
 
@@ -85,7 +114,7 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/wishlists/[id] - Update a wishlist (only owner can update)
+// PATCH /api/wishlists/[id] - Update a wishlist (owner or members can update)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -97,17 +126,14 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const body: UpdateWishlistInput = await request.json();
     
-    const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string } | undefined;
-    
-    if (!wishlist) {
-      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
-    }
-
-    if (wishlist.user_id.toString() !== userId) {
+    // Check if user can edit (is owner or member)
+    const canEdit = await canEditWishlist(id, userId);
+    if (!canEdit) {
       return forbiddenResponse();
     }
+
+    const body: UpdateWishlistInput = await request.json();
     
     const updates: string[] = [];
     const values: (string | number)[] = [];

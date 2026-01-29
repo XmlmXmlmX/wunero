@@ -12,23 +12,32 @@ export async function GET() {
       return unauthorizedResponse();
     }
     
-    // Get user's own wishlists with item count
+    // Get user's own wishlists and member wishlists with item count and member count
     const ownWishlists = await db.prepare(`
-      SELECT w.*, COUNT(wi.id) as items_count
+      SELECT w.*, 
+        COUNT(DISTINCT wi.id) as items_count,
+        COUNT(DISTINCT lm.user_id) as members_count,
+        CASE WHEN w.user_id = ? THEN 1 ELSE 0 END as can_edit,
+        CASE WHEN lm_self.user_id IS NOT NULL THEN 1 ELSE 0 END as is_member
       FROM wishlists w
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
-      WHERE w.user_id = ?
-      GROUP BY w.id, w.title, w.description, w.created_at, w.updated_at, w.user_id, w.is_private
+      LEFT JOIN list_members lm ON w.id = lm.wishlist_id
+      LEFT JOIN list_members lm_self ON w.id = lm_self.wishlist_id AND lm_self.user_id = ?
+      WHERE w.user_id = ? OR lm_self.user_id IS NOT NULL
+      GROUP BY w.id, w.title, w.description, w.created_at, w.updated_at, w.user_id, w.is_private, lm_self.user_id
       ORDER BY w.updated_at DESC
-    `).all(userId) as unknown as Wishlist[];
+    `).all(userId, userId, userId) as unknown as Wishlist[];
     
-    // Get followed wishlists with owner info and item count
+    // Get followed wishlists with owner info, item count, and member count
     const followedWishlists = await db.prepare(`
-      SELECT w.*, fw.created_at as followed_at, u.email as owner_email, u.name as owner_name, COUNT(wi.id) as items_count
+      SELECT w.*, fw.created_at as followed_at, u.email as owner_email, u.name as owner_name,
+        COUNT(DISTINCT wi.id) as items_count,
+        COUNT(DISTINCT lm.user_id) as members_count
       FROM followed_wishlists fw
       JOIN wishlists w ON fw.wishlist_id = w.id
       LEFT JOIN users u ON w.user_id = u.id
       LEFT JOIN wish_items wi ON w.id = wi.wishlist_id
+      LEFT JOIN list_members lm ON w.id = lm.wishlist_id
       WHERE fw.user_id = ?
       GROUP BY w.id, w.title, w.description, w.created_at, w.updated_at, w.user_id, w.is_private, fw.created_at, u.email, u.name
       ORDER BY fw.created_at DESC

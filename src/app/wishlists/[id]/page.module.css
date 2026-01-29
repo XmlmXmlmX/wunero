@@ -92,6 +92,124 @@
   justify-content: flex-end;
 }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.titleText {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.memberAvatars {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.memberAvatars > .memberAvatar:not(:first-child) {
+  margin-left: -.5rem;
+}
+
+.memberAvatar,
+.memberAvatarMore {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #374151;
+  border: 1px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.memberAvatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.memberAvatarMore {
+  background-color: #f3f4f6;
+  font-size: 0.75rem;
+}
+
+.membersSection {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.membersTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.membersAddRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.memberError {
+  color: #b91c1c;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.membersList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background-color: #f9fafb;
+}
+
+.memberInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.memberName {
+  font-weight: 600;
+  color: #111827;
+}
+
+.memberEmail {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.memberHint {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .headerCard,
   .itemsHeader {

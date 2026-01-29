@@ -4,7 +4,7 @@ import styles from "./WuPageHeader.module.css";
 import ArrowNarrowLeftIcon from "@/components/ui/arrow-narrow-left-icon";
 
 interface WuPageHeaderProps extends WuOrganism<HTMLDivElement> {
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   backHref?: string;
   backLabel?: string;

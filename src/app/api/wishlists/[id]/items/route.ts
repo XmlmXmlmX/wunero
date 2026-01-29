@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import db from '@/lib/storage';
 import { extractProductInfo } from '@/lib/productParser';
 import { requireAuth, unauthorizedResponse, forbiddenResponse } from '@/lib/api-auth';
+import { canEditWishlist } from '@/lib/wishlist-permissions';
 import type { WishItem, CreateWishItemInput } from '@/types';
 
 // GET /api/wishlists/[id]/items - Get all items in a wishlist
@@ -27,7 +28,7 @@ export async function GET(
   }
 }
 
-// POST /api/wishlists/[id]/items - Add a new item to wishlist (only owner can add items)
+// POST /api/wishlists/[id]/items - Add a new item to wishlist (owner or members can add items)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -41,13 +42,14 @@ export async function POST(
     const { id } = await params;
     const body: CreateWishItemInput = await request.json();
     
-    // Check if wishlist exists and user is owner
+    // Check if wishlist exists and user can edit
     const wishlist = await db.prepare('SELECT * FROM wishlists WHERE id = ?').get(id) as { user_id: string } | undefined;
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
     }
 
-    if (wishlist.user_id.toString() !== userId) {
+    const canEdit = await canEditWishlist(id, userId);
+    if (!canEdit) {
       return forbiddenResponse();
     }
     

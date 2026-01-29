@@ -1,7 +1,8 @@
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import { WuButton, WuButtonLink, WuInput, WuTextArea } from "@/components/atoms";
+import { WuAvatar } from "@/components/atoms/WuAvatar/WuAvatar";
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
 import { WuItemCard } from "@/components/molecules/WuItemCard/WuItemCard";
 import { WuItemForm } from "@/components/organisms/WuItemForm/WuItemForm";
@@ -25,9 +26,14 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
   const [showImportForm, setShowImportForm] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [members, setMembers] = useState<Array<{ id: string; name?: string; email: string; avatar_url?: string }>>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [memberEmail, setMemberEmail] = useState("");
+  const [memberError, setMemberError] = useState<string | null>(null);
 
   const loadWishlist = useCallback(async () => {
     try {
@@ -43,8 +49,27 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
       // The API returns owner_id if current user is the owner or is following
       // If current user is the owner, owner_id will match their id
       setIsOwner(data.is_owner === true);
+      setCanEdit(data.can_edit === true);
     } catch (error) {
       console.error("Error loading wishlist:", error);
+    }
+  }, [id]);
+
+  const loadMembers = useCallback(async () => {
+    try {
+      setMembersLoading(true);
+      const response = await fetch(`/api/wishlists/${id}/members`);
+      if (!response.ok) {
+        setMembers([]);
+        return;
+      }
+      const data = await response.json();
+      setMembers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error loading members:", error);
+      setMembers([]);
+    } finally {
+      setMembersLoading(false);
     }
   }, [id]);
 
@@ -69,7 +94,8 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     loadWishlist();
     loadItems();
-  }, [loadItems, loadWishlist]);
+    loadMembers();
+  }, [loadItems, loadMembers, loadWishlist]);
 
   const createItem = async ({ 
     title, 
@@ -86,8 +112,8 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     quantity: number;
     importance: string;
   }) => {
-    if (!isOwner) {
-      alert("You can only add items to your own wishlists");
+    if (!canEdit) {
+      alert("You can only add items to wishlists you can edit");
       return;
     }
 
@@ -129,6 +155,10 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     description?: string;
   }>) => {
     try {
+      if (!canEdit) {
+        alert("You can only import items into wishlists you can edit");
+        return;
+      }
       // Add imported items to this wishlist
       for (const item of importedItems) {
         const response = await fetch(`/api/wishlists/${id}/items`, {
@@ -361,6 +391,76 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     }
   };
 
+  const addMember = async () => {
+    if (!memberEmail.trim()) return;
+    setMemberError(null);
+    try {
+      const response = await fetch(`/api/wishlists/${id}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: memberEmail.trim() }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        setMemberError(error?.error || "Failed to add member");
+        return;
+      }
+
+      setMemberEmail("");
+      await loadMembers();
+    } catch (error) {
+      console.error("Error adding member:", error);
+      setMemberError("Failed to add member");
+    }
+  };
+
+  const removeMember = async (memberId: string) => {
+    if (!confirm("Remove this member from the wishlist?")) return;
+    try {
+      const response = await fetch(`/api/wishlists/${id}/members?memberId=${encodeURIComponent(memberId)}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error?.error || "Failed to remove member");
+        return;
+      }
+
+      await loadMembers();
+    } catch (error) {
+      console.error("Error removing member:", error);
+      alert("Failed to remove member");
+    }
+  };
+
+  const titleWithMembers = useMemo(() => {
+    return (
+      <div className={styles.titleRow}>
+        <span className={styles.titleText}>{wishlist?.title}</span>
+        {members.length > 0 && (
+          <div className={styles.memberAvatars} aria-label="List members">
+            {members.slice(0, 5).map((member) => (
+              <WuAvatar 
+                key={member.id}
+                src={member.avatar_url}
+                alt={member.name || member.email}
+                fallbackText={member.name || member.email}
+                size="sm"
+                className={styles.memberAvatar}
+                title={member.name || member.email}
+              />
+            ))}
+            {members.length > 5 && (
+              <div className={styles.memberAvatarMore}>+{members.length - 5}</div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }, [members, wishlist?.title]);
+
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
@@ -399,6 +499,52 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                 onChange={(e) => setEditDescription(e.target.value)}
                 placeholder="Wishlist description"
               />
+              {isOwner && (
+                <div className={styles.membersSection}>
+                  <h3 className={styles.membersTitle}>Members</h3>
+                  <div className={styles.membersAddRow}>
+                    <WuInput
+                      value={memberEmail}
+                      onChange={(e) => setMemberEmail(e.target.value)}
+                      placeholder="Add member by email"
+                      type="email"
+                      fullWidth
+                    />
+                    <WuButton type="button" variant="primary" onClick={addMember} disabled={!memberEmail.trim()}>
+                      Add
+                    </WuButton>
+                  </div>
+                  {memberError && <p className={styles.memberError}>{memberError}</p>}
+                  {membersLoading ? (
+                    <p className={styles.memberHint}>Loading members...</p>
+                  ) : (
+                    <ul className={styles.membersList}>
+                      {members.length === 0 && <li className={styles.memberHint}>No members yet.</li>}
+                      {members.map((member) => (
+                        <li key={member.id} className={styles.memberItem}>
+                          <div className={styles.memberInfo}>
+                            <WuAvatar 
+                              src={member.avatar_url}
+                              alt={member.name || member.email}
+                              fallbackText={member.name || member.email}
+                              size="md"
+                            />
+                            <div>
+                              <div className={styles.memberName}>{member.name || member.email}</div>
+                              {member.name && <div className={styles.memberEmail}>{member.email}</div>}
+                            </div>
+                          </div>
+                          {member.id !== wishlist.user_id && (
+                            <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
+                              Remove
+                            </WuButton>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
               <div className={styles.editActions}>
                 <WuButton type="button" variant="primary" onClick={saveEdit}>
                   Save
@@ -410,13 +556,13 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
             </div>
           ) : (
             <WuPageHeader
-              title={wishlist.title}
+              title={titleWithMembers}
               subtitle={wishlist.description}
               backHref="/wishlists"
               backLabel="Back to Wishlists"
               actions={
                 <div className={styles.actionsWrapper}>
-                  {isOwner && (
+                  {canEdit && (
                     <WuButton type="button" variant="outline" onClick={startEdit}>
                       <PenIcon /> Edit
                     </WuButton>
@@ -440,7 +586,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
         <div className={styles.section}>
           <div className={styles.itemsHeader}>
             <h2>Items</h2>
-            {isOwner && (
+            {canEdit && (
               <div className={styles.itemsActions}>
                 <WuButton
                   type="button"
@@ -488,7 +634,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
               title="No items yet"
               description="Add your first wish item to this list!"
               actions={
-                isOwner ? (
+                canEdit ? (
                   <WuButton type="button" variant="primary" onClick={() => setShowNewForm(true)}>
                     Add Your First Item
                   </WuButton>
@@ -531,7 +677,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                     onEdit={setEditingItemId}
                     onMoveUp={moveItemUp}
                     onMoveDown={moveItemDown}
-                    isOwner={isOwner}
+                    isOwner={canEdit}
                     isFirst={index === 0}
                     isLast={index === items.length - 1}
                   />
