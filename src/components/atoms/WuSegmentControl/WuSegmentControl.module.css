@@ -1,0 +1,108 @@
+.segmentControl {
+  display: inline-flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmentButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: calc(var(--radius-md) - 2px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.segmentButton:hover:not(.active) {
+  background: var(--color-hover);
+  color: var(--color-text);
+}
+
+.segmentButton.active {
+  background: var(--color-background);
+  color: var(--color-text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.label {
+  line-height: 1;
+}
+
+/* Size variants */
+.segment-sm .segmentButton {
+  padding: 4px 12px;
+  font-size: 13px;
+  gap: 4px;
+}
+
+.segment-sm .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.segment-sm .icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.segment-md .segmentButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  gap: 6px;
+}
+
+.segment-lg .segmentButton {
+  padding: 12px 20px;
+  font-size: 15px;
+  gap: 8px;
+}
+
+.segment-lg .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.segment-lg .icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .segmentButton {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .label {
+    display: none;
+  }
+
+  .icon {
+    margin: 0;
+  }
+}

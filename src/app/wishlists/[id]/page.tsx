@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useMemo, useState } from "react";
-import { WuButton, WuButtonLink, WuInput, WuTextArea } from "@/components/atoms";
+import { WuButton, WuButtonLink, WuInput, WuTextArea, WuSegmentControl } from "@/components/atoms";
 import { WuAvatar } from "@/components/atoms/WuAvatar/WuAvatar";
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
 import { WuItemCard } from "@/components/molecules/WuItemCard/WuItemCard";
@@ -334,14 +334,14 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     alert("Share link copied to clipboard!");
   };
 
-  const togglePrivacy = async () => {
+  const togglePrivacy = async (newPrivacy: boolean) => {
     if (!wishlist) return;
 
     try {
       const response = await fetch(`/api/wishlists/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_private: !wishlist.is_private }),
+        body: JSON.stringify({ is_private: newPrivacy }),
       });
 
       if (response.ok) {
@@ -573,9 +573,15 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                     </WuButton>
                   )}
                   {isOwner && (
-                    <WuButton type="button" variant="outline" onClick={togglePrivacy}>
-                      {wishlist.is_private ? <><WorldIcon />Make Public</> : <><LockIcon />Make Private</>}
-                    </WuButton>
+                    <WuSegmentControl
+                      value={wishlist.is_private ? "private" : "public"}
+                      onChange={(value) => togglePrivacy(value === "private")}
+                      options={[
+                        { value: "public", label: "Public", icon: <WorldIcon /> },
+                        { value: "private", label: "Private", icon: <LockIcon /> }
+                      ]}
+                      size="md"
+                    />
                   )}
                 </div>
               }
