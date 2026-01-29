@@ -30,6 +30,7 @@
 }
 
 .description {
+  padding-block-start: .25rem;
   margin: 0;
   color: #4b5563;
   flex: 1;

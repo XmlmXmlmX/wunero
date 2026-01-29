@@ -12,6 +12,7 @@ import { WuImportAmazonWishlistForm } from "@/components/organisms/WuImportAmazo
 import type { Wishlist } from "@/types";
 import styles from "./page.module.css";
 import ArrowBigDownDashIcon from "@/components/ui/arrow-big-down-dash-icon";
+import { PlusIcon } from "lucide-react";
 
 export default function WishlistsPage() {
   const router = useRouter();
@@ -204,7 +205,7 @@ export default function WishlistsPage() {
                     setShowImportForm(false);
                   }}
                 >
-                  {showFollowForm ? "Cancel" : "+ Follow"}
+                  {showFollowForm ? "Cancel" : <><PlusIcon /> Follow</>}
                 </WuButton>
                 <WuButton
                   type="button"
@@ -215,7 +216,7 @@ export default function WishlistsPage() {
                     setShowImportForm(false);
                   }}
                 >
-                  {showNewForm ? "Cancel" : "+ New Wishlist"}
+                  {showNewForm ? "Cancel" : <><PlusIcon /> New Wishlist</>}
                 </WuButton>
               </div>
             }

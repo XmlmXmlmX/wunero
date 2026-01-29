@@ -9,6 +9,7 @@
   color: #ffffff;
   font-weight: 600;
   flex-shrink: 0;
+  border: .125rem solid #667eea;
 }
 
 .avatar-sm {

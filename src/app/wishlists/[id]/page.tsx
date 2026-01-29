@@ -520,27 +520,33 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                   ) : (
                     <ul className={styles.membersList}>
                       {members.length === 0 && <li className={styles.memberHint}>No members yet.</li>}
-                      {members.map((member) => (
-                        <li key={member.id} className={styles.memberItem}>
-                          <div className={styles.memberInfo}>
-                            <WuAvatar 
-                              src={member.avatar_url}
-                              alt={member.name || member.email}
-                              fallbackText={member.name || member.email}
-                              size="md"
-                            />
-                            <div>
-                              <div className={styles.memberName}>{member.name || member.email}</div>
-                              {member.name && <div className={styles.memberEmail}>{member.email}</div>}
+                      {members.map((member) => {
+                        const isPending = (member as any).is_pending === true;
+                        return (
+                          <li key={member.id} className={`${styles.memberItem} ${isPending ? styles.memberItemPending : ''}`}>
+                            <div className={styles.memberInfo}>
+                              <WuAvatar 
+                                src={member.avatar_url}
+                                alt={member.name || member.email}
+                                fallbackText={member.name || member.email}
+                                size="md"
+                              />
+                              <div>
+                                <div className={styles.memberName}>
+                                  {member.name || member.email}
+                                  {isPending && <span className={styles.memberPendingBadge}> • Invitation pending</span>}
+                                </div>
+                                {member.name && <div className={styles.memberEmail}>{member.email}</div>}
+                              </div>
                             </div>
-                          </div>
-                          {member.id !== wishlist.user_id && (
-                            <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
-                              Remove
-                            </WuButton>
-                          )}
-                        </li>
-                      ))}
+                            {member.id !== wishlist.user_id && (
+                              <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
+                                Remove
+                              </WuButton>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>

@@ -3,12 +3,24 @@ import { nanoid } from 'nanoid';
 import db from '@/lib/storage';
 import { requireAuth, unauthorizedResponse } from '@/lib/api-auth';
 import { getGravatarUrl } from '@/lib/gravatar';
+import { sendWishlistInvitationEmail } from '@/lib/email';
 
 interface ListMember {
   id: string;
   name?: string;
   email: string;
   avatar_url?: string;
+  is_pending?: boolean;
+}
+
+interface WishlistData {
+  title: string;
+  user_id: string;
+}
+
+interface UserData {
+  id: string;
+  name?: string;
 }
 
 // GET /api/wishlists/:id/members - Get all members of a wishlist
@@ -52,13 +64,29 @@ export async function GET(
       ORDER BY lm.created_at ASC
     `).all(wishlistId) as unknown as ListMember[];
 
+    // Get all pending invitations for this wishlist
+    const pendingInvitations = await db.prepare(`
+      SELECT email FROM pending_invitations
+      WHERE wishlist_id = ? AND expires_at > ?
+      ORDER BY created_at ASC
+    `).all(wishlistId, Date.now()) as unknown as { email: string }[];
+
+    // Convert pending invitations to member-like objects
+    const pendingMembers: ListMember[] = pendingInvitations.map(inv => ({
+      id: `pending-${inv.email}`,
+      email: inv.email,
+      avatar_url: getGravatarUrl(inv.email, 80, 'identicon'),
+      is_pending: true
+    }));
+
     // Generate Gravatar URLs for members without avatar_url
     const membersWithAvatars = members.map(member => ({
       ...member,
-      avatar_url: member.avatar_url || getGravatarUrl(member.email, 80, 'identicon')
+      avatar_url: member.avatar_url || getGravatarUrl(member.email, 80, 'identicon'),
+      is_pending: false
     }));
 
-    return NextResponse.json(membersWithAvatars);
+    return NextResponse.json([...membersWithAvatars, ...pendingMembers]);
   } catch (error) {
     console.error('Error fetching members:', error);
     return NextResponse.json({ error: 'Failed to fetch members' }, { status: 500 });
@@ -83,8 +111,10 @@ export async function POST(
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
+    const email = body.email.trim().toLowerCase();
+
     // Verify the user is the owner or a member of the wishlist
-    const wishlist = await db.prepare('SELECT user_id FROM wishlists WHERE id = ?').get(wishlistId) as unknown as { user_id: string } | undefined;
+    const wishlist = await db.prepare('SELECT user_id, title FROM wishlists WHERE id = ?').get(wishlistId) as unknown as WishlistData | undefined;
     
     if (!wishlist) {
       return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
@@ -97,46 +127,92 @@ export async function POST(
       return NextResponse.json({ error: 'Only members can add other members' }, { status: 403 });
     }
 
-    // Find the user by email
-    const targetUser = await db.prepare('SELECT id FROM users WHERE email = ?').get(body.email) as unknown as { id: string } | undefined;
-    
-    if (!targetUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    if (targetUser.id === userId) {
+    // Check if user is trying to add themselves
+    const currentUser = await db.prepare('SELECT email FROM users WHERE id = ?').get(userId) as unknown as { email: string } | undefined;
+    if (currentUser && currentUser.email === email) {
       return NextResponse.json({ error: 'Cannot add yourself as a member' }, { status: 400 });
     }
 
-    // Check if already a member
-    const existingMember = await db.prepare('SELECT id FROM list_members WHERE wishlist_id = ? AND user_id = ?').get(wishlistId, targetUser.id) as unknown as { id: string } | undefined;
+    // Find the user by email
+    const targetUser = await db.prepare('SELECT id FROM users WHERE email = ?').get(email) as unknown as { id: string } | undefined;
     
-    if (existingMember) {
-      return NextResponse.json({ error: 'User is already a member' }, { status: 400 });
+    // If user exists, add them as a member
+    if (targetUser) {
+      // Check if already a member
+      const existingMember = await db.prepare('SELECT id FROM list_members WHERE wishlist_id = ? AND user_id = ?').get(wishlistId, targetUser.id);
+      
+      if (existingMember) {
+        return NextResponse.json({ error: 'User is already a member' }, { status: 400 });
+      }
+
+      // Remove any pending invitation if it exists
+      await db.prepare('DELETE FROM pending_invitations WHERE email = ? AND wishlist_id = ?').run(email, wishlistId);
+
+      // Add the member
+      const memberId = nanoid();
+      const now = Date.now();
+
+      await db.prepare(`
+        INSERT INTO list_members (id, wishlist_id, user_id, created_at)
+        VALUES (?, ?, ?, ?)
+      `).run(memberId, wishlistId, targetUser.id, now);
+
+      const member = await db.prepare(`
+        SELECT u.id, u.name, u.email, u.avatar_url
+        FROM users u
+        WHERE u.id = ?
+      `).get(targetUser.id) as unknown as ListMember;
+
+      // Generate Gravatar URL if avatar_url is not set
+      const memberWithAvatar = {
+        ...member,
+        avatar_url: member.avatar_url || getGravatarUrl(member.email, 80, 'identicon'),
+        is_pending: false
+      };
+
+      return NextResponse.json(memberWithAvatar, { status: 201 });
     }
 
-    // Add the member
-    const memberId = nanoid();
+    // User doesn't exist - check if there's already a pending invitation
+    const existingInvitation = await db.prepare('SELECT id FROM pending_invitations WHERE email = ? AND wishlist_id = ?').get(email, wishlistId);
+    
+    if (existingInvitation) {
+      return NextResponse.json({ error: 'An invitation is already pending for this email' }, { status: 400 });
+    }
+
+    // Create a pending invitation
+    const invitationId = nanoid();
+    const invitationCode = nanoid(32);
     const now = Date.now();
+    const expiresAt = now + 7 * 24 * 60 * 60 * 1000; // 7 days
 
     await db.prepare(`
-      INSERT INTO list_members (id, wishlist_id, user_id, created_at)
-      VALUES (?, ?, ?, ?)
-    `).run(memberId, wishlistId, targetUser.id, now);
+      INSERT INTO pending_invitations (id, email, wishlist_id, invitation_code, created_at, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(invitationId, email, wishlistId, invitationCode, now, expiresAt);
 
-    const member = await db.prepare(`
-      SELECT u.id, u.name, u.email, u.avatar_url
-      FROM users u
-      WHERE u.id = ?
-    `).get(targetUser.id) as unknown as ListMember;
+    // Get the inviter's name
+    const inviter = await db.prepare('SELECT name FROM users WHERE id = ?').get(userId) as unknown as UserData | undefined;
+    const inviterName = inviter?.name || 'A Wunero user';
 
-    // Generate Gravatar URL if avatar_url is not set
-    const memberWithAvatar = {
-      ...member,
-      avatar_url: member.avatar_url || getGravatarUrl(member.email, 80, 'identicon')
+    // Send invitation email
+    try {
+      await sendWishlistInvitationEmail(email, invitationCode, wishlist.title, inviterName);
+      console.log(`📧 Invitation email sent to ${email} for wishlist ${wishlistId}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send invitation email:', emailError);
+      // Don't fail the operation if email fails, but log it
+    }
+
+    // Return the pending invitation as a member object
+    const pendingMember: ListMember = {
+      id: `pending-${email}`,
+      email,
+      avatar_url: getGravatarUrl(email, 80, 'identicon'),
+      is_pending: true
     };
 
-    return NextResponse.json(memberWithAvatar, { status: 201 });
+    return NextResponse.json(pendingMember, { status: 201 });
   } catch (error) {
     console.error('Error adding member:', error);
     return NextResponse.json({ error: 'Failed to add member' }, { status: 500 });

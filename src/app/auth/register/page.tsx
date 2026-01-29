@@ -2,7 +2,8 @@
 
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { WuInput } from "@/components/atoms/WuInput/WuInput";
 import { WuButton } from "@/components/atoms/WuButton/WuButton";
 import styles from "./page.module.css";
@@ -10,20 +11,37 @@ import { WuButtonLink } from "@/components/atoms";
 import ArrowNarrowLeftIcon from "@/components/ui/arrow-narrow-left-icon";
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [invitationInfo, setInvitationInfo] = useState<{ wishlistTitle?: string } | null>(null);
+
+  const invitationCode = searchParams.get("invitation");
+
+  useEffect(() => {
+    // If there's an invitation code, we could fetch the invitation details here
+    if (invitationCode) {
+      // For now, we'll just show a message that they're joining via invitation
+      setInvitationInfo({ wishlistTitle: "a wishlist" });
+    }
+  }, [invitationCode]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
 
+    const body: any = { email, password };
+    if (invitationCode) {
+      body.invitation = invitationCode;
+    }
+
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -41,12 +59,22 @@ export default function RegisterPage() {
       <div className={styles.card}>
         <div className={styles.header}>
           <h1 className={styles.title}>Create Account</h1>
-          <p className={styles.subtitle}>Join Wunero and start collecting wishes</p>
+          <p className={styles.subtitle}>
+            {invitationCode ? `Join a wishlist and connect with friends` : `Join Wunero and start collecting wishes`}
+          </p>
         </div>
 
         {error && (
           <div className={styles.error}>
             <p>{error}</p>
+          </div>
+        )}
+
+        {invitationCode && (
+          <div className={`${styles.infoBox} ${styles.infoBoxInvitation}`}>
+            <p className={styles.infoText}>
+              🎁 You've been invited to join {invitationInfo?.wishlistTitle || "a wishlist"}. Create your account to accept the invitation!
+            </p>
           </div>
         )}
 

@@ -51,16 +51,45 @@ const providers: NextAuthOptions["providers"] = [
 export const authOptions: NextAuthOptions = {
   providers,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user?.id) {
         token.id = user.id as string;
       }
+      
+      // When session is updated via update(), refresh user data from database
+      if (trigger === "update" && token.id) {
+        interface UserData {
+          name: string | null;
+          avatar_url: string | null;
+        }
+        const dbUser = await db.prepare<UserData>("SELECT name, avatar_url FROM users WHERE id = ?").get(token.id as string);
+        if (dbUser) {
+          token.name = dbUser.name || token.email;
+          token.picture = dbUser.avatar_url;
+        }
+      }
+      
+      // On initial login, load user data from database
+      if (user?.id && !token.name) {
+        interface UserData {
+          name: string | null;
+          avatar_url: string | null;
+        }
+        const dbUser = await db.prepare<UserData>("SELECT name, avatar_url FROM users WHERE id = ?").get(user.id);
+        if (dbUser) {
+          token.name = dbUser.name || token.email;
+          token.picture = dbUser.avatar_url;
+        }
+      }
+      
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.picture as string;
       }
       return session;
     },

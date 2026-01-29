@@ -19,6 +19,14 @@
   height: 1rem;
 }
 
+.button > :global(svg.lucide.lucide-plus) {
+  transition: transform 0.5s ease;
+}
+
+.button:hover > :global(svg.lucide.lucide-plus) {
+  transform: rotate(180deg);
+}
+
 .primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -99,3 +107,4 @@
 .fullWidth {
   width: 100%;
 }
+

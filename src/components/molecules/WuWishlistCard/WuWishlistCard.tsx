@@ -2,7 +2,7 @@ import { WuButton, WuButtonLink, WuBadge } from "@/components/atoms";
 import { type Wishlist } from "@/types";
 import { type WuMolecule } from "@/types/WuMolecule";
 import styles from "./WuWishlistCard.module.css";
-import { LockIcon } from "lucide-react";
+import { File, LockIcon, User } from "lucide-react";
 
 interface WuWishlistCardProps extends WuMolecule<HTMLDivElement> {
   wishlist: Wishlist;
@@ -19,11 +19,13 @@ export function WuWishlistCard({ wishlist, onDelete, isFollowed = false, classNa
         <div className={styles.titleWrapper}>
           <h3 className={styles.title}>{wishlist.title}</h3>
           <WuBadge variant="primary">
-            {wishlist.items_count} Items
+            <File />
+            { wishlist.items_count} {wishlist.items_count === 1 ? 'Item' : 'Items'}
           </WuBadge>
           {wishlist.members_count && wishlist.members_count > 0 ? (
             <WuBadge variant="default">
-              {wishlist.members_count} Members
+              <User />
+              {wishlist.members_count} { wishlist.members_count === 1 ? 'Member' : 'Members' }
             </WuBadge>
           ) : null}
           {wishlist.is_member ? (

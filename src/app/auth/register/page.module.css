@@ -54,6 +54,15 @@
   border-radius: 4px;
 }
 
+.infoBoxInvitation {
+  background: #dbeafe;
+  border-left-color: #0284c7;
+}
+
+.infoBoxInvitation .infoText {
+  color: #0c4a6e;
+}
+
 .infoText {
   font-size: 0.875rem;
   color: #555;

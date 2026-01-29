@@ -204,6 +204,27 @@
   color: #6b7280;
 }
 
+.memberPendingBadge {
+  font-size: 0.85rem;
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background-color: #f9fafb;
+}
+
+.memberItemPending {
+  background-color: #fffbeb;
+  border-color: #fcd34d;
+}
+
 .memberHint {
   font-size: 0.9rem;
   color: #6b7280;
