@@ -109,13 +109,22 @@
   display: flex;
   align-items: center;
   gap: 0;
+  flex-direction: row-reverse;
 }
 
-.memberAvatars > .memberAvatar:not(:first-child) {
-  margin-left: -.5rem;
+.memberAvatars > .memberAvatar:not(:last-child) {
+  margin-left: -.75rem;
 }
 
-.memberAvatar,
+.memberAvatar {
+  transition: transform 150ms ease;
+}
+
+.memberAvatar:hover {
+  z-index: 2;
+  transform: scale(1.1);
+}
+
 .memberAvatarMore {
   width: 28px;
   height: 28px;

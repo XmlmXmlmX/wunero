@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { WuButton } from "@/components/atoms";
+import type { AnimatedIconHandle } from "@/components/ui/types";
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
 import { WuWishlistCard } from "@/components/molecules/WuWishlistCard/WuWishlistCard";
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
@@ -22,6 +23,9 @@ export default function WishlistsPage() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [showFollowForm, setShowFollowForm] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
+
+  // Ref for animated import icon
+  const importIconRef = useRef<AnimatedIconHandle>(null);
 
   useEffect(() => {
     loadWishlists();
@@ -193,8 +197,9 @@ export default function WishlistsPage() {
                     setShowNewForm(false);
                     setShowFollowForm(false);
                   }}
+                  animatedIconRef={importIconRef}
                 >
-                  {showImportForm ? "Cancel" : <><ArrowBigDownDashIcon /> Import</>}
+                  {showImportForm ? "Cancel" : <><ArrowBigDownDashIcon ref={importIconRef} /> Import</>}
                 </WuButton>
                 <WuButton
                   type="button"

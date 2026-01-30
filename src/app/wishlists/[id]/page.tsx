@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { WuButton, WuButtonLink, WuInput, WuTextArea, WuSegmentControl } from "@/components/atoms";
 import { WuAvatar } from "@/components/atoms/WuAvatar/WuAvatar";
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
@@ -8,13 +8,15 @@ import { WuItemCard } from "@/components/molecules/WuItemCard/WuItemCard";
 import { WuItemForm } from "@/components/organisms/WuItemForm/WuItemForm";
 import { WuImportAmazonWishlistForm } from "@/components/organisms/WuImportAmazonWishlistForm/WuImportAmazonWishlistForm";
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
+import { WuWishlistInviteModal } from "@/components/organisms/WuWishlistInviteModal/WuWishlistInviteModal";
 import type { WishItem, Wishlist } from "@/types";
+import type { AnimatedIconHandle } from "@/components/ui/types";
 import styles from "./page.module.css";
 import LinkIcon from "@/components/ui/link-icon";
 import LockIcon from "@/components/ui/lock-icon";
 import WorldIcon from "@/components/ui/world-icon";
 import PenIcon from "@/components/ui/pen-icon";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, UserPlus } from "lucide-react";
 import ArrowBigDownDashIcon from "@/components/ui/arrow-big-down-dash-icon";
 
 export default function WishlistDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,13 +30,19 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
   const [isOwner, setIsOwner] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isInviteMode, setIsInviteMode] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
-  const [members, setMembers] = useState<Array<{ id: string; name?: string; email: string; avatar_url?: string }>>([]);
+  const [members, setMembers] = useState<Array<{ id: string; name?: string; email: string; avatar_url?: string; is_pending?: boolean }>>([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const [memberEmail, setMemberEmail] = useState("");
   const [memberError, setMemberError] = useState<string | null>(null);
   const [resendingInvitation, setResendingInvitation] = useState<string | null>(null);
+
+  // Refs for animated icons
+  const editIconRef = useRef<AnimatedIconHandle>(null);
+  const shareIconRef = useRef<AnimatedIconHandle>(null);
+  const importIconRef = useRef<AnimatedIconHandle>(null);
 
   const loadWishlist = useCallback(async () => {
     try {
@@ -143,6 +151,51 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     }
   };
 
+  const updateItem = async ({
+    title, 
+    description, 
+    url, 
+    priority, 
+    quantity, 
+    importance 
+  }: { 
+    title: string; 
+    description?: string; 
+    url?: string; 
+    priority: number;
+    quantity: number;
+    importance: string;
+  }) => {
+    if (!canEdit || !editingItemId) {
+      alert("You can only edit items in wishlists you can edit");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/wishlists/${id}/items/${editingItemId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          url,
+          priority,
+          quantity,
+          importance,
+        }),
+      });
+
+      if (response.ok) {
+        setEditingItemId(null);
+        loadItems();
+      } else {
+        alert("Failed to update item");
+      }
+    } catch (error) {
+      console.error("Error updating item:", error);
+    }
+  };
+
   const handleImportAmazon = async (importedItems: Array<{
     title: string;
     url?: string;
@@ -206,15 +259,16 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
       } else {
         newPurchasedQty = Math.min(totalQty, currentPurchasedQty + 1);
       }
-      
-      await fetch(`/api/wishlists/${id}/items/${item.id}`, {
+
+      await fetch(`/api/wishlists/${id}/items/${item.id}` , {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           purchased_quantity: newPurchasedQty,
-          purchased: newPurchasedQty >= totalQty ? 1 : 0
+          purchased: newPurchasedQty >= totalQty ? 1 : 0,
         }),
       });
+
       loadItems();
     } catch (error) {
       console.error("Error updating item:", error);
@@ -234,54 +288,6 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
       }
     } catch (error) {
       console.error("Error deleting item:", error);
-    }
-  };
-
-  const updateItem = async ({ 
-    title, 
-    description, 
-    url, 
-    priority,
-    quantity,
-    importance,
-    price,
-    currency
-  }: { 
-    title: string; 
-    description?: string; 
-    url?: string; 
-    priority: number;
-    quantity: number;
-    importance: string;
-    price?: string;
-    currency: string;
-  }) => {
-    if (!editingItemId) return;
-
-    try {
-      const response = await fetch(`/api/wishlists/${id}/items/${editingItemId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          url,
-          priority,
-          quantity,
-          importance,
-          price,
-          currency,
-        }),
-      });
-
-      if (response.ok) {
-        setEditingItemId(null);
-        loadItems();
-      } else {
-        alert("Failed to update item");
-      }
-    } catch (error) {
-      console.error("Error updating item:", error);
     }
   };
 
@@ -360,6 +366,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     if (!wishlist) return;
     setEditTitle(wishlist.title);
     setEditDescription(wishlist.description || "");
+    setIsInviteMode(false);
     setIsEditMode(true);
   };
 
@@ -383,6 +390,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
       if (response.ok) {
         const updatedWishlist = await response.json();
         setWishlist(updatedWishlist);
+        setIsInviteMode(false);
         setIsEditMode(false);
       } else {
         alert("Failed to update wishlist");
@@ -390,6 +398,19 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
     } catch (error) {
       console.error("Error updating wishlist:", error);
     }
+  };
+
+  const startInvite = () => {
+    setMemberEmail("");
+    setMemberError(null);
+    setIsEditMode(false);
+    setIsInviteMode(true);
+  };
+
+  const cancelInvite = () => {
+    setIsInviteMode(false);
+    setMemberEmail("");
+    setMemberError(null);
   };
 
   const addMember = async () => {
@@ -546,7 +567,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                     <ul className={styles.membersList}>
                       {members.length === 0 && <li className={styles.memberHint}>No members yet.</li>}
                       {members.map((member) => {
-                        const isPending = (member as any).is_pending === true;
+                        const isPending = member.is_pending === true;
                         return (
                           <li key={member.id} className={`${styles.memberItem} ${isPending ? styles.memberItemPending : ''}`}>
                             <div className={styles.memberInfo}>
@@ -597,6 +618,78 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                 </WuButton>
               </div>
             </div>
+          ) : isInviteMode ? (
+            <div className={styles.editForm}>
+              {isOwner && (
+                <div className={styles.membersSection}>
+                  <h3 className={styles.membersTitle}>Members</h3>
+                  <div className={styles.membersAddRow}>
+                    <WuInput
+                      value={memberEmail}
+                      onChange={(e) => setMemberEmail(e.target.value)}
+                      placeholder="Add member by email"
+                      type="email"
+                      fullWidth
+                    />
+                    <WuButton type="button" variant="primary" onClick={addMember} disabled={!memberEmail.trim()}>
+                      Add
+                    </WuButton>
+                  </div>
+                  {memberError && <p className={styles.memberError}>{memberError}</p>}
+                  {membersLoading ? (
+                    <p className={styles.memberHint}>Loading members...</p>
+                  ) : (
+                    <ul className={styles.membersList}>
+                      {members.length === 0 && <li className={styles.memberHint}>No members yet.</li>}
+                      {members.map((member) => {
+                        const isPending = member.is_pending === true;
+                        return (
+                          <li key={member.id} className={`${styles.memberItem} ${isPending ? styles.memberItemPending : ''}`}>
+                            <div className={styles.memberInfo}>
+                              <WuAvatar 
+                                src={member.avatar_url}
+                                alt={member.name || member.email}
+                                fallbackText={member.name || member.email}
+                                size="md"
+                              />
+                              <div>
+                                <div className={styles.memberName}>
+                                  {member.name || member.email}
+                                  {isPending && <span className={styles.memberPendingBadge}> • Invitation pending</span>}
+                                </div>
+                                {member.name && <div className={styles.memberEmail}>{member.email}</div>}
+                              </div>
+                            </div>
+                            <div className={styles.memberActions}>
+                              {isPending && (
+                                <WuButton 
+                                  type="button" 
+                                  variant="outline" 
+                                  onClick={() => resendInvitation(member.email)}
+                                  disabled={resendingInvitation === member.email}
+                                >
+                                  {resendingInvitation === member.email ? "Resending..." : "Resend"}
+                                </WuButton>
+                              )}
+                              {member.id !== wishlist.user_id && (
+                                <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
+                                  Remove
+                                </WuButton>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              )}
+              <div className={styles.editActions}>
+                <WuButton type="button" variant="outline" onClick={cancelInvite}>
+                  Close
+                </WuButton>
+              </div>
+            </div>
           ) : (
             <WuPageHeader
               title={titleWithMembers}
@@ -606,13 +699,18 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
               actions={
                 <div className={styles.actionsWrapper}>
                   {canEdit && (
-                    <WuButton type="button" variant="outline" onClick={startEdit}>
-                      <PenIcon /> Edit
+                    <WuButton type="button" variant="outline" onClick={startEdit} animatedIconRef={editIconRef}>
+                      <PenIcon ref={editIconRef} /> Edit
+                    </WuButton>
+                  )}
+                  {isOwner && (
+                    <WuButton type="button" variant="outline" onClick={startInvite}>
+                      <UserPlus size={16} /> Invite
                     </WuButton>
                   )}
                   {!wishlist.is_private && (
-                    <WuButton type="button" variant="outline" onClick={copyShareLink}>
-                      <LinkIcon /> Share
+                    <WuButton type="button" variant="outline" onClick={copyShareLink} animatedIconRef={shareIconRef}>
+                      <LinkIcon ref={shareIconRef} /> Share
                     </WuButton>
                   )}
                   {isOwner && (
@@ -632,6 +730,22 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
           )}
         </div>
 
+        <WuWishlistInviteModal
+          isOpen={isInviteMode}
+          isOwner={isOwner}
+          ownerId={wishlist.user_id}
+          memberEmail={memberEmail}
+          onMemberEmailChange={setMemberEmail}
+          onAddMember={addMember}
+          memberError={memberError}
+          membersLoading={membersLoading}
+          members={members}
+          resendingInvitation={resendingInvitation}
+          onResendInvitation={resendInvitation}
+          onRemoveMember={removeMember}
+          onClose={cancelInvite}
+        />
+
         <div className={styles.section}>
           <div className={styles.itemsHeader}>
             <h2>Items</h2>
@@ -644,8 +758,9 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                     setShowImportForm(!showImportForm);
                     setShowNewForm(false);
                   }}
+                  animatedIconRef={importIconRef}
                 >
-                  {showImportForm ? "Cancel" : <><ArrowBigDownDashIcon /> Import</>}
+                  {showImportForm ? "Cancel" : <><ArrowBigDownDashIcon ref={importIconRef} /> Import</>}
                 </WuButton>
                 <WuButton
                   type="button"

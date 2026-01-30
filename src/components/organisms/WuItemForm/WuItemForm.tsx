@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { WuButton, WuInput, WuTextArea, WuCheckbox } from "@/components/atoms";
+import type { AnimatedIconHandle } from "@/components/ui/types";
 import { WuInputGroup } from "@/components/molecules/WuInputGroup/WuInputGroup";
 import { WuModal } from "@/components/molecules/WuModal/WuModal";
 import ExternalLinkIcon from "@/components/ui/external-link-icon";
@@ -43,6 +44,9 @@ interface ParsedProductData {
 }
 
 export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = false, className, ...rest }: WuItemFormProps) {
+  // Ref for animated icon
+  const externalLinkIconRef = useRef<AnimatedIconHandle>(null);
+
   const [url, setUrl] = useState(initialValues?.url || "");
   const [title, setTitle] = useState(initialValues?.title || "");
   const [description, setDescription] = useState(initialValues?.description || "");
@@ -246,7 +250,8 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                   variant: "ghost",
                   title: "Open URL in new tab",
                   onClick: () => window.open(url, "_blank", "noopener,noreferrer"),
-                  children: <ExternalLinkIcon size={18} />,
+                  animatedIconRef: externalLinkIconRef,
+                  children: <ExternalLinkIcon ref={externalLinkIconRef} size={18} />,
                 }}
               />
             ) : (
@@ -323,8 +328,9 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                     type="button" 
                     variant="ghost" 
                     onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+                    animatedIconRef={externalLinkIconRef}
                   >
-                    <ExternalLinkIcon size={18} />
+                    <ExternalLinkIcon ref={externalLinkIconRef} size={18} />
                   </WuButton>
                 </div>
               </div>

@@ -1,8 +1,10 @@
 import { WuButton, WuButtonLink, WuBadge } from "@/components/atoms";
+import { useRef } from "react";
 import { sanitizeUrl, isValidImageUrl, getIconHorseUrl } from "@/lib/urlUtils";
 import { getShopName } from "@/lib/productParser";
 import { type WishItem, type WishItemImportance, type Currency } from "@/types";
 import { type WuMolecule } from "@/types/WuMolecule";
+import type { AnimatedIconHandle } from "@/components/ui/types";
 import { ChevronUpIcon, ChevronDownIcon, PenIcon } from "lucide-react";
 import styles from "./WuItemCard.module.css";
 import ExternalLinkIcon from "@/components/ui/external-link-icon";
@@ -53,6 +55,11 @@ export function WuItemCard({
   className, 
   ...rest 
 }: WuItemCardProps) {
+  // Refs for animated icons
+  const shoppingCartRef = useRef<AnimatedIconHandle>(null);
+  const externalLinkRef = useRef<AnimatedIconHandle>(null);
+  const editIconRef = useRef<AnimatedIconHandle>(null);
+
   const showUrl = item.url && sanitizeUrl(item.url);
   const showImage = item.image_url && isValidImageUrl(item.image_url);
   const purchasedQty = item.purchased_quantity || 0;
@@ -129,21 +136,22 @@ export function WuItemCard({
       <div className={styles.actions}>
         {showUrl && (
           <div className={styles.bottomLinks}><WuButtonLink href={showUrl} target="_blank" rel="noopener noreferrer" variant="ghost" style={{ '--icon-horse-url': `url(${getIconHorseUrl(item.url!)})` } as React.CSSProperties} className={styles.horseIcon}>
-            View on {getShopName(item.url!)} <ExternalLinkIcon />
+            View on {getShopName(item.url!)} <ExternalLinkIcon ref={externalLinkRef} />
           </WuButtonLink></div>
         )}
         <WuButton
           type="button"
           variant={isFullyPurchased ? "outline" : "secondary"}
           onClick={() => onTogglePurchased(item)}
+          animatedIconRef={shoppingCartRef}
         >
-          {isFullyPurchased ? "Unmark one" : <><ShoppingCartIcon /> {totalQty > 1 ? "Mark one as Purchased" : "Mark as Purchased"}</>}
+          {isFullyPurchased ? "Unmark one" : <><ShoppingCartIcon ref={shoppingCartRef} /> {totalQty > 1 ? "Mark one as Purchased" : "Mark as Purchased"}</>}
         </WuButton>
         {isOwner && (
           <>
             {onEdit && (
-              <WuButton type="button" variant="outline" onClick={() => onEdit(item.id)}>
-                <PenIcon size={16} /> Edit
+              <WuButton type="button" variant="outline" onClick={() => onEdit(item.id)} animatedIconRef={editIconRef}>
+                <PenIcon ref={editIconRef} size={16} /> Edit
               </WuButton>
             )}
             <WuButton type="button" variant="danger" onClick={() => onDelete(item.id)}>

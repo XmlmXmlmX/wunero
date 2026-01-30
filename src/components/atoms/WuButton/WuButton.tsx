@@ -1,3 +1,4 @@
+import type { AnimatedIconHandle } from "@/components/ui/types";
 import type { WuAtom } from "@/types/WuAtom";
 import styles from "./WuButton.module.css";
 
@@ -15,6 +16,7 @@ export type WuButtonProps = WuAtom<HTMLButtonElement, React.ButtonHTMLAttributes
   variant?: WuButtonVariant;
   fullWidth?: boolean;
   isLoading?: boolean;
+  animatedIconRef?: React.RefObject<AnimatedIconHandle | null>;
 };
 
 export function WuButton({
@@ -25,18 +27,35 @@ export function WuButton({
   isLoading,
   type = "button",
   disabled,
+  animatedIconRef,
+  onMouseEnter,
+  onMouseLeave,
   ...rest
 }: WuButtonProps) {
+  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    animatedIconRef?.current?.startAnimation?.();
+    onMouseEnter?.(e);
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    animatedIconRef?.current?.stopAnimation?.();
+    onMouseLeave?.(e);
+  };
+
   const classes = [styles.button, variantClassName[variant], fullWidth ? styles.fullWidth : "", className]
     .filter(Boolean)
     .join(" ");
+
+  const ariaAttrs = isLoading ? { "aria-busy": "true" as const } : { "aria-busy": "false" as const };
 
   return (
     <button
       type={type}
       className={classes}
       disabled={disabled || isLoading}
-      aria-busy={isLoading}
+      {...ariaAttrs}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       {...rest}
     >
       {isLoading ? "Loading..." : children}
