@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { WuButton } from "@/components/atoms";
 import { type WuMolecule } from "@/types/WuMolecule";
@@ -33,7 +35,7 @@ export function WuModal({
   };
 
   return (
-    <div className={styles.overlay} onClick={handleOverlayClick} aria-hidden>
+    <div className={styles.overlay} onClick={handleOverlayClick}>
       <div
         className={classes}
         onClick={(e) => e.stopPropagation()}

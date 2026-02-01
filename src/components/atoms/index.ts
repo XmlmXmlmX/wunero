@@ -7,3 +7,4 @@ export { WuAvatar } from "./WuAvatar/WuAvatar";
 export { WuBadge, type WuBadgeProps } from "./WuBadge/WuBadge";
 export { WuCheckbox, type WuCheckboxProps } from "./WuCheckbox/WuCheckbox";
 export { WuSegmentControl } from "./WuSegmentControl/WuSegmentControl";
+export { default as WuSwitch, type WuSwitchProps } from "./WuSwitch";

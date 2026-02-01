@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { AuthProvider } from "@/lib/auth-provider";
 import { WuNavbar } from "@/components/organisms/WuNavbar/WuNavbar";
+import WuFooter from "@/components/organisms/WuFooter";
+import WuCookieBanner from "@/components/organisms/WuCookieBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,6 +44,8 @@ export default function RootLayout({
         <AuthProvider>
           <WuNavbar />
           {children}
+          <WuFooter />
+          <WuCookieBanner />
         </AuthProvider>
       </body>
     </html>

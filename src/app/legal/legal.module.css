@@ -1,0 +1,93 @@
+.pageHeader {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem 0 1rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #171717;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+
+.section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.section h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #404040;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.section p {
+  line-height: 1.8;
+  color: #525252;
+  margin-bottom: 1rem;
+}
+
+.section ul {
+  line-height: 1.8;
+  color: #525252;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.section li {
+  margin-bottom: 0.5rem;
+}
+
+.section a {
+  color: #667eea;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.section a:hover {
+  color: #764ba2;
+}
+
+.updated {
+  font-size: 0.875rem;
+  color: #737373;
+  font-style: italic;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e5e5;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 1rem 3rem;
+  }
+
+  .section h2 {
+    font-size: 1.25rem;
+  }
+
+  .section h3 {
+    font-size: 1.125rem;
+  }
+
+  .section h4 {
+    font-size: 1rem;
+  }
+}
