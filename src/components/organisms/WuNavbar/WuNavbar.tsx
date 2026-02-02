@@ -2,9 +2,9 @@
 
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "@/i18n";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { WuAvatar, WuLanguageSwitcher } from "@/components/atoms";
+import { WuAvatar, WuLanguageSwitcher, WuDropdown } from "@/components/atoms";
 import { getGravatarUrl } from "@/lib/gravatar";
 import styles from "./WuNavbar.module.css";
 import Link from "next/link";
@@ -16,22 +16,7 @@ export function WuNavbar() {
   const t = useTranslations('nav');
   const { data: session, status } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isDropdownOpen]);
 
   if (status === "loading") {
     return null;
@@ -60,55 +45,55 @@ export function WuNavbar() {
         <div className={styles.actions}>
           <WuLanguageSwitcher />
           
-          <div className={styles.avatarWrapper} ref={dropdownRef}>
+          <WuDropdown
+            trigger={
+              <button
+                className={styles.avatarButton}
+                aria-label={t('userMenu')}
+              >
+                <WuAvatar src={avatarUrl} alt={displayName} size="md" fallbackText={displayName} />
+              </button>
+            }
+            isOpen={isDropdownOpen}
+            onOpenChange={setIsDropdownOpen}
+            align="right"
+          >
+            <div className={styles.dropdownHeader}>
+              <div className={styles.dropdownName}>{displayName}</div>
+              {user.email && <div className={styles.dropdownEmail}>{user.email}</div>}
+            </div>
+
+            <div className={styles.dropdownDivider} />
+
             <button
-              className={styles.avatarButton}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              aria-label={t('userMenu')}
+              className={styles.dropdownItem}
+              onClick={() => {
+                setIsDropdownOpen(false);
+                router.push("/profile");
+              }}
             >
-              <WuAvatar src={avatarUrl} alt={displayName} size="md" fallbackText={displayName} />
+              <GearIcon />
+              <span>{t('profile')}</span>
             </button>
 
-            {isDropdownOpen && (
-              <div className={styles.dropdown}>
-                <div className={styles.dropdownHeader}>
-                  <div className={styles.dropdownName}>{displayName}</div>
-                  {user.email && <div className={styles.dropdownEmail}>{user.email}</div>}
-                </div>
+            <button
+              className={styles.dropdownItem}
+              onClick={() => {
+                setIsDropdownOpen(false);
+                router.push("/wishlists");
+              }}
+            >
+              <UnorderedListIcon />
+              <span>{t('wishlists')}</span>
+            </button>
 
-                <div className={styles.dropdownDivider} />
+            <div className={styles.dropdownDivider} />
 
-                <button
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setIsDropdownOpen(false);
-                    router.push("/profile");
-                  }}
-                >
-                  <GearIcon />
-                  <span>{t('profile')}</span>
-                </button>
-
-                <button
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setIsDropdownOpen(false);
-                    router.push("/wishlists");
-                  }}
-                >
-                  <UnorderedListIcon />
-                  <span>{t('wishlists')}</span>
-                </button>
-
-                <div className={styles.dropdownDivider} />
-
-                <button className={styles.dropdownItem} onClick={handleSignOut}>
-                  <LogoutIcon />
-                  <span>{t('signOut')}</span>
-                </button>
-              </div>
-            )}
-          </div>
+            <button className={styles.dropdownItem} onClick={handleSignOut}>
+              <LogoutIcon />
+              <span>{t('signOut')}</span>
+            </button>
+          </WuDropdown>
         </div>
       </div>
     </nav>

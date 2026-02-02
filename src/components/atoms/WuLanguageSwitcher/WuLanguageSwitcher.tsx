@@ -1,15 +1,26 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n';
+import { usePathname } from '@/i18n';
 import { routing } from '@/i18n';
+import { WuDropdown } from '../WuDropdown';
 import styles from './WuLanguageSwitcher.module.css';
+import 'flag-icons/css/flag-icons.min.css';
+
+type LanguageCode = 'de' | 'en';
+
+const languageConfig: Record<LanguageCode, { name: string; flag: string }> = {
+  de: { name: 'Deutsch', flag: 'de' },
+  en: { name: 'English', flag: 'gb' }
+};
 
 export function WuLanguageSwitcher() {
-  const locale = useLocale();
-  const router = useRouter();
+  const locale = useLocale() as LanguageCode;
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const currentLanguage = languageConfig[locale] || languageConfig.de;
 
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale !== locale) {
@@ -17,21 +28,46 @@ export function WuLanguageSwitcher() {
       const newUrl = `/${newLocale}${pathname}`;
       window.location.href = newUrl;
     }
+    setIsOpen(false);
   };
 
   return (
-    <div className={styles.switcher}>
-      {routing.locales.map((loc) => (
+    <WuDropdown
+      trigger={
         <button
-          key={loc}
-          onClick={() => handleLocaleChange(loc)}
-          className={`${styles.button} ${locale === loc ? styles.active : ''}`}
-          aria-label={`Switch to ${loc.toUpperCase()}`}
+          className={styles.trigger}
+          aria-label="Select language"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
         >
-          {loc.toUpperCase()}
+          <span className={`fi fi-${currentLanguage.flag}`} />
+          <span className={styles.label}>{currentLanguage.name}</span>
+          <svg className={`${styles.chevron} ${isOpen ? styles.open : ''}`} width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
         </button>
-      ))}
-    </div>
+      }
+      isOpen={isOpen}
+      onOpenChange={setIsOpen}
+      align="right"
+    >
+      <div className={styles.menu} role="listbox">
+        {routing.locales.map((loc) => {
+          const lang = languageConfig[loc as LanguageCode] || { name: loc, flag: loc };
+          return (
+            <button
+              key={loc}
+              onClick={() => handleLocaleChange(loc)}
+              className={`${styles.menuItem} ${locale === loc ? styles.active : ''}`}
+              role="option"
+              aria-selected={locale === loc}
+            >
+              <span className={`fi fi-${lang.flag}`} />
+              <span>{lang.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </WuDropdown>
   );
 }
-

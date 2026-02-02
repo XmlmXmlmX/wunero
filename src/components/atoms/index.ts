@@ -6,6 +6,7 @@ export { WuAuthButton } from "./WuAuthButton/WuAuthButton";
 export { WuAvatar } from "./WuAvatar/WuAvatar";
 export { WuBadge, type WuBadgeProps } from "./WuBadge/WuBadge";
 export { WuCheckbox, type WuCheckboxProps } from "./WuCheckbox/WuCheckbox";
+export * from "./WuDropdown";
 export { WuSegmentControl } from "./WuSegmentControl/WuSegmentControl";
 export { default as WuSwitch, type WuSwitchProps } from "./WuSwitch";
 export { WuLanguageSwitcher } from "./WuLanguageSwitcher/WuLanguageSwitcher";

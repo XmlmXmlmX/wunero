@@ -29,55 +29,80 @@ describe('WuLanguageSwitcher', () => {
     (window as any).location = { href: '' };
   });
 
-  it('renders language buttons', () => {
+  it('renders trigger button', () => {
     render(<WuLanguageSwitcher />);
     
-    expect(screen.getByText('DE')).toBeInTheDocument();
-    expect(screen.getByText('EN')).toBeInTheDocument();
+    const button = screen.getByRole('button', { name: /select language/i });
+    expect(button).toBeInTheDocument();
   });
 
-  it('renders buttons for all locales', () => {
+  it('displays current language', () => {
     render(<WuLanguageSwitcher />);
     
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('Deutsch')).toBeInTheDocument();
   });
 
-  it('marks current locale as active', () => {
+  it('opens dropdown when trigger is clicked', async () => {
     render(<WuLanguageSwitcher />);
     
-    const deButton = screen.getByText('DE');
-    // DE button should be the active one
-    expect(deButton).toBeInTheDocument();
+    const button = screen.getByRole('button', { name: /select language/i });
+    await userEvent.click(button);
+    
+    // Menu should be visible with language options
+    const menu = screen.getByRole('listbox');
+    expect(menu).toBeInTheDocument();
   });
 
-  it('switches to English when clicking EN', async () => {
+  it('displays all available languages in dropdown', async () => {
     render(<WuLanguageSwitcher />);
     
-    const englishButton = screen.getByText('EN');
-    await userEvent.click(englishButton);
+    const button = screen.getByRole('button', { name: /select language/i });
+    await userEvent.click(button);
     
-    // Verify the button is clickable
-    expect(englishButton).toBeInTheDocument();
+    // Check for language options in the menu
+    const deutschOptions = screen.getAllByText('Deutsch');
+    const englishOptions = screen.getAllByText('English');
+    expect(deutschOptions.length).toBeGreaterThan(0);
+    expect(englishOptions.length).toBeGreaterThan(0);
   });
 
-  it('switches to German when clicking DE', async () => {
+  it('closes dropdown after selecting a language', async () => {
     render(<WuLanguageSwitcher />);
     
-    const germanButton = screen.getByText('DE');
-    await userEvent.click(germanButton);
+    const button = screen.getByRole('button', { name: /select language/i });
+    await userEvent.click(button);
     
-    // Verify the button is clickable
-    expect(germanButton).toBeInTheDocument();
+    // Find the English option in the menu
+    const englishOptions = screen.getAllByText('English');
+    const englishMenuOption = englishOptions[englishOptions.length - 1]; // Get the last one (from the menu)
+    await userEvent.click(englishMenuOption);
+    
+    // After clicking, dropdown should close (menu disappears)
+    const menu = screen.queryByRole('listbox');
+    expect(menu).not.toBeInTheDocument();
   });
 
-  it('has accessible aria-label for language buttons', () => {
+  it('marks current language as active', async () => {
     render(<WuLanguageSwitcher />);
     
-    const buttons = screen.getAllByRole('button');
-    // Each button should have an aria-label
-    buttons.forEach(button => {
-      expect(button).toHaveAttribute('aria-label');
-    });
+    const button = screen.getByRole('button', { name: /select language/i });
+    await userEvent.click(button);
+    
+    const deutschOption = screen.getAllByRole('option')[0];
+    expect(deutschOption).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('closes dropdown when clicking outside', async () => {
+    const { container } = render(<WuLanguageSwitcher />);
+    
+    const button = screen.getByRole('button', { name: /select language/i });
+    await userEvent.click(button);
+    
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    
+    // Click outside the dropdown
+    await userEvent.click(container);
+    
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 });

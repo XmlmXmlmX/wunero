@@ -1,44 +1,88 @@
-.switcher {
+.trigger {
   display: flex;
-  gap: 0.25rem;
-  border-radius: 0.5rem;
-  background: var(--color-surface-secondary, #f5f5f5);
-  padding: 0.25rem;
-}
-
-.button {
-  padding: 0.375rem 0.75rem;
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary, #666);
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border, #e0e0e0);
+  background: var(--color-surface, #fff);
+  color: var(--color-text-primary, #000);
   cursor: pointer;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
-.button:hover {
-  background: var(--color-surface-hover, #e5e5e5);
-  color: var(--color-text-primary, #000);
+.trigger:hover {
+  background: var(--color-surface-hover, #f5f5f5);
+  border-color: var(--color-primary, #3b82f6);
 }
 
-.button.active {
-  background: var(--color-primary, #3b82f6);
-  color: white;
-  cursor: default;
-}
-
-.button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.button.pending {
-  opacity: 0.7;
-}
-
-.button:focus-visible {
+.trigger:focus-visible {
   outline: 2px solid var(--color-primary, #3b82f6);
   outline-offset: 2px;
 }
+
+.label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .label {
+    display: inline;
+  }
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+  color: var(--color-text-secondary, #666);
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.menu {
+  min-width: 12rem;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary, #000);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.menuItem:hover {
+  background: var(--color-surface-hover, #f5f5f5);
+}
+
+.menuItem.active {
+  background: var(--color-primary-light, #eff6ff);
+  color: var(--color-primary, #3b82f6);
+  font-weight: 600;
+}
+
+.menuItem:focus-visible {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: -2px;
+}
+
+/* Flag icon size */
+.trigger :global(.fi),
+.menuItem :global(.fi) {
+  width: 1.5rem;
+  height: 1rem;
+  border-radius: 2px;
+  overflow: hidden;
+}
+

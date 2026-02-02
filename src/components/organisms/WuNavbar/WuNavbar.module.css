@@ -32,10 +32,6 @@
   gap: 1rem;
 }
 
-.avatarWrapper {
-  position: relative;
-}
-
 .avatarButton {
   background: none;
   border: none;
@@ -50,29 +46,7 @@
   opacity: 0.8;
 }
 
-.dropdown {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
-  background-color: #ffffff;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  min-width: 220px;
-  padding: 0.5rem;
-  z-index: 1000;
-  animation: fadeIn 150ms ease;
-}
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .dropdownHeader {
   padding: 0.75rem 0.75rem 0.5rem;
