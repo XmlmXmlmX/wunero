@@ -58,3 +58,74 @@ export function getIconHorseUrl(url: string): string {
     return '';
   }
 }
+
+const amazonRegionByHost: Record<string, string> = {
+  "amazon.de": "DE",
+  "amazon.com": "US",
+  "amazon.co.uk": "UK",
+  "amazon.fr": "FR",
+  "amazon.it": "IT",
+  "amazon.es": "ES",
+  "amazon.nl": "NL",
+  "amazon.se": "SE",
+  "amazon.pl": "PL",
+};
+
+const amazonPartnerTags: Record<string, string | undefined> = {
+  DE: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_DE,
+  US: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_US,
+  UK: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_UK,
+  FR: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_FR,
+  IT: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_IT,
+  ES: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_ES,
+  NL: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_NL,
+  SE: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_SE,
+  PL: process.env.NEXT_PUBLIC_AMAZON_PARTNER_TAG_PL,
+};
+
+function getAmazonRegionFromHost(hostname: string): string | null {
+  const host = hostname.toLowerCase();
+  const match = Object.keys(amazonRegionByHost).find((domain) => host === domain || host.endsWith(`.${domain}`));
+  return match ? amazonRegionByHost[match] : null;
+}
+
+export function addAmazonPartnerTag(url: string | undefined): string | undefined {
+  const sanitized = sanitizeUrl(url);
+  if (!sanitized) return undefined;
+
+  try {
+    const urlObj = new URL(sanitized);
+    const region = getAmazonRegionFromHost(urlObj.hostname);
+    if (!region) return sanitized;
+
+    const partnerTag = amazonPartnerTags[region];
+    if (!partnerTag) return sanitized;
+
+    if (!urlObj.searchParams.get("tag")) {
+      urlObj.searchParams.set("tag", partnerTag);
+    }
+
+    return urlObj.toString();
+  } catch {
+    return sanitized;
+  }
+}
+
+export function isAmazonAffiliateUrl(url: string | undefined): boolean {
+  const sanitized = sanitizeUrl(url);
+  if (!sanitized) return false;
+
+  try {
+    const urlObj = new URL(sanitized);
+    const region = getAmazonRegionFromHost(urlObj.hostname);
+    if (!region) return false;
+
+    const partnerTag = amazonPartnerTags[region];
+    if (!partnerTag) return false;
+
+    const tag = urlObj.searchParams.get("tag");
+    return tag === partnerTag;
+  } catch {
+    return false;
+  }
+}

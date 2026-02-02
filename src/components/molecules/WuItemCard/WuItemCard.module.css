@@ -168,6 +168,9 @@
 .bottomLinks {
   flex-grow: 1;
   margin-inline-start: .75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 a.horseIcon {
@@ -183,4 +186,14 @@ a.horseIcon::before {
   width: 1em;
   height: 1em;
   align-self: self-end;
+}
+
+.affiliateLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
 }

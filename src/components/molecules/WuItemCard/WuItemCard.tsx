@@ -1,11 +1,11 @@
-import { WuButton, WuButtonLink, WuBadge } from "@/components/atoms";
+import { WuButton, WuButtonLink, WuBadge, WuTooltip } from "@/components/atoms";
 import { useRef } from "react";
-import { sanitizeUrl, isValidImageUrl, getIconHorseUrl } from "@/lib/urlUtils";
+import { sanitizeUrl, isValidImageUrl, getIconHorseUrl, addAmazonPartnerTag, isAmazonAffiliateUrl } from "@/lib/urlUtils";
 import { getShopName } from "@/lib/productParser";
 import { type WishItem, type WishItemImportance, type Currency } from "@/types";
 import { type WuMolecule } from "@/types/WuMolecule";
 import type { AnimatedIconHandle } from "@/components/ui/types";
-import { ChevronUpIcon, ChevronDownIcon, PenIcon, Trash, TrashIcon } from "lucide-react";
+import { ChevronUpIcon, ChevronDownIcon, PenIcon, Trash, TrashIcon, HeartIcon, HeartOff, HeartPlus } from "lucide-react";
 import styles from "./WuItemCard.module.css";
 import ExternalLinkIcon from "@/components/ui/external-link-icon";
 import ShoppingCartIcon from "@/components/ui/shopping-cart-icon";
@@ -27,6 +27,8 @@ interface WuItemCardProps extends WuMolecule<HTMLDivElement> {
     niceToHave: string;
     notSure: string;
     viewOn: string;
+    affiliate: string;
+    affiliateHint: string;
     unmarkOne: string;
     markAsPurchased: string;
     markOneAsPurchased: string;
@@ -44,6 +46,8 @@ const defaultTranslations = {
   niceToHave: "Nice to have",
   notSure: "Not sure",
   viewOn: "View on",
+  affiliate: "Affiliate link",
+  affiliateHint: "Contains an affiliate link",
   unmarkOne: "Unmark one",
   markAsPurchased: "Mark as Purchased",
   markOneAsPurchased: "Mark one as Purchased",
@@ -65,6 +69,35 @@ const currencySymbols: Record<Currency, string> = {
   "GBP": "£",
   "USD": "$",
 };
+
+function getImportanceIcons(importance: WishItemImportance) {
+  switch (importance) {
+    case "must-have":
+      return <><HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon fill="currentColor" strokeWidth={0}/></>;
+    case "would-love":
+      return <>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon /></>;
+    case "nice-to-have":
+      return <>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon />
+        <HeartIcon /></>;
+
+    case "not-sure":
+      return <>
+        <HeartIcon fill="currentColor" strokeWidth={0}/>
+        <HeartIcon />
+        <HeartIcon />
+        <HeartIcon /></>;
+  }
+}
 
 export function WuItemCard({ 
   item, 
@@ -96,6 +129,8 @@ export function WuItemCard({
   const editIconRef = useRef<AnimatedIconHandle>(null);
 
   const showUrl = item.url && sanitizeUrl(item.url);
+  const partnerUrl = showUrl ? addAmazonPartnerTag(showUrl) : undefined;
+  const showAffiliateLabel = Boolean(partnerUrl && isAmazonAffiliateUrl(partnerUrl));
   const showImage = item.image_url && isValidImageUrl(item.image_url);
   const purchasedQty = item.purchased_quantity || 0;
   const totalQty = item.quantity || 1;
@@ -132,6 +167,7 @@ export function WuItemCard({
               )}
               <WuBadge variant={importanceVariants[item.importance]}>
                 {importanceLabels[item.importance]}
+                {getImportanceIcons(item.importance)}
               </WuBadge>
               {isFullyPurchased && <WuBadge variant="primary">{t.purchased}</WuBadge>}
             </div>
@@ -170,9 +206,16 @@ export function WuItemCard({
       </div>
       <div className={styles.actions}>
         {showUrl && (
-          <div className={styles.bottomLinks}><WuButtonLink href={showUrl} target="_blank" rel="noopener noreferrer" variant="ghost" style={{ '--icon-horse-url': `url(${getIconHorseUrl(item.url!)})` } as React.CSSProperties} className={styles.horseIcon}>
-            {t.viewOn} {getShopName(item.url!)} <ExternalLinkIcon ref={externalLinkRef} />
-          </WuButtonLink></div>
+          <div className={styles.bottomLinks}>
+            <WuButtonLink href={partnerUrl ?? showUrl} target="_blank" rel="noopener noreferrer" variant="ghost" style={{ '--icon-horse-url': `url(${getIconHorseUrl(item.url!)})` } as React.CSSProperties} className={styles.horseIcon}>
+              {t.viewOn} {getShopName(item.url!)} <ExternalLinkIcon ref={externalLinkRef} />
+            </WuButtonLink>
+            {showAffiliateLabel && (
+              <WuTooltip content={t.affiliateHint}>
+                <span className={styles.affiliateLabel}>{t.affiliate}</span>
+              </WuTooltip>
+            )}
+          </div>
         )}
         <WuButton
           type="button"

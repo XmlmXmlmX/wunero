@@ -1,0 +1,73 @@
+.tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+}
+
+.bubble {
+  position: absolute;
+  z-index: 10;
+  max-width: 220px;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+  background: #111827;
+  color: #f9fafb;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.tooltip:hover .bubble,
+.tooltip:focus-within .bubble {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.top .bubble {
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translate(-50%, 8px) scale(0.95);
+}
+
+.tooltip:hover .top .bubble,
+.tooltip:focus-within .top .bubble {
+  transform: translate(-50%, 0) scale(1);
+}
+
+.bottom .bubble {
+  top: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translate(-50%, 8px) scale(0.95);
+}
+
+.tooltip:hover .bottom .bubble,
+.tooltip:focus-within .bottom .bubble {
+  transform: translate(-50%, 0) scale(1);
+}
+
+.left .bubble {
+  right: calc(100% + 0.4rem);
+  top: 50%;
+  transform: translate(0, calc(-50% + 8px)) scale(0.95);
+}
+
+.tooltip:hover .left .bubble,
+.tooltip:focus-within .left .bubble {
+  transform: translate(0, -50%) scale(1);
+}
+
+.right .bubble {
+  left: calc(100% + 0.4rem);
+  top: 50%;
+  transform: translate(0, calc(-50% + 8px)) scale(0.95);
+}
+
+.tooltip:hover .right .bubble,
+.tooltip:focus-within .right .bubble {
+  transform: translate(0, -50%) scale(1);
+}

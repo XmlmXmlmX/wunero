@@ -858,6 +858,8 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                       niceToHave: tItem("niceToHave"),
                       notSure: tItem("notSure"),
                       viewOn: tItem("viewOn"),
+                      affiliate: tItem.has("affiliate") ? tItem("affiliate") : "Affiliate link",
+                      affiliateHint: tItem.has("affiliateHint") ? tItem("affiliateHint") : "Contains an affiliate link",
                       unmarkOne: tItem("unmarkOne"),
                       markAsPurchased: tItem("markAsPurchased"),
                       markOneAsPurchased: tItem("markOneAsPurchased"),

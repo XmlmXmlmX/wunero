@@ -11,3 +11,4 @@ export { WuSegmentControl } from "./WuSegmentControl/WuSegmentControl";
 export { default as WuSwitch, type WuSwitchProps } from "./WuSwitch";
 export { WuLanguageSwitcher } from "./WuLanguageSwitcher/WuLanguageSwitcher";
 export { WuSpinner } from "./WuSpinner/WuSpinner";
+export { WuTooltip } from "./WuTooltip/WuTooltip";
