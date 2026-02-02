@@ -23,7 +23,7 @@ async function execMultiple(sql: ReturnType<typeof neon<false, false>>, sqlStrin
 
   for (const statement of statements) {
     try {
-      await sql(statement);
+      await sql.query(statement);
     } catch (error) {
       console.error('SQL Error:', statement, error);
       throw error;
@@ -51,15 +51,15 @@ export async function createPostgresAdapter(): Promise<Database> {
       const pgQuery = convertPlaceholders(query);
       return {
         get: async (...params: unknown[]) => {
-          const result = await sql(pgQuery, params);
+          const result = await sql.query(pgQuery, params);
           return (result[0] as T) || undefined;
         },
         all: async (...params: unknown[]) => {
-          const result = await sql(pgQuery, params);
+          const result = await sql.query(pgQuery, params);
           return result as T[];
         },
         run: async (...params: unknown[]) => {
-          const result = await sql(pgQuery, params);
+          const result = await sql.query(pgQuery, params);
           return {
             lastInsertRowid: 0,
             changes: result.length,
