@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { reopenConsentBanner } from '@/lib/cookies';
 import styles from './WuFooter.module.css';
 
 const WuFooter: React.FC = () => {
+  const t = useTranslations('footer');
   const currentYear = new Date().getFullYear();
 
   return (
@@ -13,11 +15,11 @@ const WuFooter: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.links}>
           <Link href="/legal/imprint" className={styles.link}>
-            Impressum
+            {t('imprint')}
           </Link>
           <span className={styles.divider}>•</span>
           <Link href="/legal/privacy" className={styles.link}>
-            Datenschutz
+            {t('privacy')}
           </Link>
           <span className={styles.divider}>•</span>
           <button
@@ -25,11 +27,11 @@ const WuFooter: React.FC = () => {
             className={styles.link}
             style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            Cookie-Einstellungen
+            {t('cookieSettings')}
           </button>
         </div>
         <p className={styles.copyright}>
-          © {currentYear} Wunero. All rights reserved.
+          {t('copyright', { year: currentYear })}
         </p>
       </div>
     </footer>

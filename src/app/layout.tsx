@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { AuthProvider } from "@/lib/auth-provider";
-import { WuNavbar } from "@/components/organisms/WuNavbar/WuNavbar";
-import WuFooter from "@/components/organisms/WuFooter";
-import WuCookieBanner from "@/components/organisms/WuCookieBanner";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,21 +30,16 @@ export const viewport: Viewport = {
   themeColor: "#000",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
-      <body className="antialiased">
-        <AuthProvider>
-          <WuNavbar />
-          {children}
-          <WuFooter />
-          <WuCookieBanner />
-        </AuthProvider>
-      </body>
+    <html lang={locale}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

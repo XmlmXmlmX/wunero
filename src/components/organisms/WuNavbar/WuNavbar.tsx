@@ -1,9 +1,10 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n";
 import { useState, useRef, useEffect } from "react";
-import { WuAvatar } from "@/components/atoms";
+import { useTranslations } from "next-intl";
+import { WuAvatar, WuLanguageSwitcher } from "@/components/atoms";
 import { getGravatarUrl } from "@/lib/gravatar";
 import styles from "./WuNavbar.module.css";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import UnorderedListIcon from "@/components/ui/unordered-list-icon";
 import LogoutIcon from "@/components/ui/logout-icon";
 
 export function WuNavbar() {
+  const t = useTranslations('nav');
   const { data: session, status } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -56,11 +58,13 @@ export function WuNavbar() {
         </div>
 
         <div className={styles.actions}>
+          <WuLanguageSwitcher />
+          
           <div className={styles.avatarWrapper} ref={dropdownRef}>
             <button
               className={styles.avatarButton}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              aria-label="User menu"
+              aria-label={t('userMenu')}
             >
               <WuAvatar src={avatarUrl} alt={displayName} size="md" fallbackText={displayName} />
             </button>
@@ -82,7 +86,7 @@ export function WuNavbar() {
                   }}
                 >
                   <GearIcon />
-                  <span>Profile Settings</span>
+                  <span>{t('profile')}</span>
                 </button>
 
                 <button
@@ -93,14 +97,14 @@ export function WuNavbar() {
                   }}
                 >
                   <UnorderedListIcon />
-                  <span>My Wishlists</span>
+                  <span>{t('wishlists')}</span>
                 </button>
 
                 <div className={styles.dropdownDivider} />
 
                 <button className={styles.dropdownItem} onClick={handleSignOut}>
                   <LogoutIcon />
-                  <span>Sign Out</span>
+                  <span>{t('signOut')}</span>
                 </button>
               </div>
             )}

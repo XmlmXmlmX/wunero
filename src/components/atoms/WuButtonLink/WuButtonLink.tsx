@@ -1,4 +1,8 @@
-import Link from "next/link";
+"use client";
+
+import { Link as IntlLink } from "@/i18n";
+import NextLink from "next/link";
+import { useLocale } from "next-intl";
 import type { WuAtom } from "@/types/WuAtom";
 import styles from "../WuButton/WuButton.module.css";
 
@@ -31,6 +35,16 @@ export function WuButtonLink({
   const classes = [styles.button, variantClassName[variant], fullWidth ? styles.fullWidth : "", className]
     .filter(Boolean)
     .join(" ");
+
+  // Try to use intl-aware Link, fallback to Next.js Link if no intl context
+  let locale: string | undefined;
+  try {
+    locale = useLocale();
+  } catch (e) {
+    // No intl context available
+  }
+
+  const Link = locale ? IntlLink : NextLink;
 
   return (
     <Link href={href} prefetch={prefetch} className={classes} {...rest}>

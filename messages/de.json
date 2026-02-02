@@ -1,0 +1,189 @@
+{
+  "app": {
+    "name": "Wunero"
+  },
+  "home": {
+    "badge": "🎉 Freude beginnt mit einem Wunsch",
+    "title": "Sammeln, organisieren und teilen Sie Wünsche mit Leichtigkeit",
+    "subtitle": "Wunero hält Ihre Wunschliste zu jedem Anlass ordentlich. Fügen Sie Produkte von Amazon, eBay und Idealo hinzu und teilen Sie sie mit einem Klick mit Freunden.",
+    "getStarted": "Jetzt starten",
+    "viewWishlists": "Meine Wunschlisten anzeigen"
+  },
+  "cookies": {
+    "title": "🍪 Cookie-Einstellungen",
+    "description": "Wir verwenden Cookies, um Ihnen das beste Erlebnis auf unserer Website zu bieten. Einige Cookies sind notwendig für die Funktionalität, während andere uns helfen, die Website zu verbessern und Ihnen personalisierte Inhalte anzuzeigen.",
+    "acceptAll": "Alle akzeptieren",
+    "acceptNecessary": "Nur notwendige",
+    "customize": "Einstellungen anpassen",
+    "back": "Zurück",
+    "savePreferences": "Einstellungen speichern",
+    "privacyLinkText": "Weitere Informationen finden Sie in unserer",
+    "privacyLink": "Datenschutzerklärung",
+    "necessary": {
+      "title": "Notwendige Cookies",
+      "description": "Diese Cookies sind für die Grundfunktionen der Website erforderlich und können nicht deaktiviert werden. Sie speichern z.B. Ihre Anmeldung und Cookie-Präferenzen."
+    },
+    "analytics": {
+      "title": "Analytik-Cookies",
+      "description": "Diese Cookies helfen uns zu verstehen, wie Besucher mit unserer Website interagieren, indem Informationen anonym gesammelt und gemeldet werden."
+    },
+    "marketing": {
+      "title": "Marketing-Cookies",
+      "description": "Diese Cookies werden verwendet, um Ihnen relevante Werbung und Angebote anzuzeigen. Sie können auch zur Messung der Effektivität von Werbekampagnen verwendet werden."
+    }
+  },
+  "footer": {
+    "imprint": "Impressum",
+    "privacy": "Datenschutz",
+    "cookieSettings": "Cookie-Einstellungen",
+    "copyright": "© {year} Wunero. Alle Rechte vorbehalten."
+  },
+  "nav": {
+    "profile": "Profil-Einstellungen",
+    "wishlists": "Meine Wunschlisten",
+    "signOut": "Abmelden",
+    "userMenu": "Benutzermenü"
+  },
+  "auth": {
+    "signin": {
+      "title": "Willkommen bei Wunero",
+      "subtitle": "Melden Sie sich an, um Ihre Wunschlisten zu verwalten",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "emailPlaceholder": "du@beispiel.de",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Passwort vergessen?",
+      "signInButton": "Anmelden",
+      "signingIn": "Wird angemeldet...",
+      "noAccount": "Noch kein Konto?",
+      "registerLink": "Hier registrieren",
+      "backToHome": "Zurück zur Startseite",
+      "continueWith": "Weiter mit {provider}",
+      "invalidCredentials": "Ungültige E-Mail oder Passwort",
+      "authFailed": "Authentifizierung fehlgeschlagen"
+    },
+    "register": {
+      "title": "Konto erstellen",
+      "subtitle": "Treten Sie Wunero bei und beginnen Sie mit dem Sammeln von Wünschen",
+      "subtitleInvite": "Treten Sie einer Wunschliste bei und verbinden Sie sich mit Freunden",
+      "email": "E-Mail",
+      "password": "Passwort (min. 8 Zeichen)",
+      "emailPlaceholder": "du@beispiel.de",
+      "passwordPlaceholder": "••••••••",
+      "registerButton": "Registrieren",
+      "registering": "Konto wird erstellt...",
+      "alreadyAccount": "Bereits ein Konto?",
+      "signinLink": "Hier anmelden",
+      "backToHome": "Zurück zur Startseite",
+      "infoText": "Erstellen Sie ein neues Konto, um Ihre Wunschlisten zu verwalten, Artikel hinzuzufügen und mit Freunden zu teilen.",
+      "invitationText": "🎁 Sie wurden eingeladen, einer Wunschliste beizutreten. Erstellen Sie Ihr Konto, um die Einladung anzunehmen!",
+      "dividerOr": "oder",
+      "secureAuth": "Wir verwenden sichere passwortbasierte Authentifizierung.",
+      "loading": "Wird geladen...",
+      "registrationFailed": "Registrierung fehlgeschlagen"
+    },
+    "forgotPassword": {
+      "title": "Passwort vergessen",
+      "subtitle": "Geben Sie Ihre E-Mail ein und wir senden Ihnen einen Reset-Link",
+      "email": "E-Mail",
+      "emailPlaceholder": "du@beispiel.de",
+      "sendButton": "Reset-Link senden",
+      "sending": "Wird gesendet...",
+      "rememberPassword": "Passwort wieder eingefallen?",
+      "signinLink": "Hier anmelden",
+      "backToHome": "Zurück zur Startseite",
+      "errorSending": "Fehler beim Senden des Reset-Links",
+      "errorOccurred": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    },
+    "resetPassword": {
+      "title": "Passwort zurücksetzen",
+      "subtitle": "Geben Sie Ihr neues Passwort ein",
+      "password": "Neues Passwort (min. 8 Zeichen)",
+      "confirmPassword": "Passwort bestätigen",
+      "passwordPlaceholder": "••••••••",
+      "resetButton": "Passwort zurücksetzen",
+      "resetting": "Wird zurückgesetzt...",
+      "backToHome": "Zurück zur Startseite",
+      "invalidLink": "Ungültiger Reset-Link",
+      "linkExpired": "Der Passwort-Reset-Link ist ungültig oder abgelaufen.",
+      "requestNewLink": "Neuen Link anfordern",
+      "success": "Passwort erfolgreich zurückgesetzt! Weiterleitung zur Anmeldung...",
+      "passwordsNoMatch": "Passwörter stimmen nicht überein",
+      "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+      "errorResetting": "Fehler beim Zurücksetzen des Passworts",
+      "errorOccurred": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "rememberPassword": "Passwort wieder eingefallen?",
+      "signinLink": "Hier anmelden"
+    },
+    "verifyEmail": {
+      "verifying": "E-Mail wird verifiziert...",
+      "pleaseWait": "Bitte warten Sie, während wir Ihr Konto verifizieren.",
+      "verified": "E-Mail verifiziert!",
+      "redirecting": "Weiterleitung zur Anmeldung...",
+      "goToSignin": "Zur Anmeldung",
+      "verificationFailed": "Verifizierung fehlgeschlagen",
+      "backToRegistration": "Zurück zur Registrierung",
+      "noToken": "Kein Verifizierungstoken angegeben",
+      "verificationError": "Fehler bei der E-Mail-Verifizierung. Bitte versuchen Sie es erneut.",
+      "loading": "Wird geladen..."
+    },
+    "error": {
+      "title": "Authentifizierungsfehler",
+      "tryAgain": "Erneut versuchen",
+      "backToHome": "Zurück zur Startseite",
+      "OAuthSignin": "Fehler beim Verbinden mit dem Anbieter. Bitte versuchen Sie es erneut.",
+      "OAuthCallback": "Fehler während des Callbacks. Bitte versuchen Sie es erneut.",
+      "OAuthCreateAccount": "Konto konnte nicht mit dem Anbieter erstellt werden.",
+      "EmailCreateAccount": "Konto konnte nicht erstellt werden.",
+      "Callback": "Ein Fehler ist im Callback-Handler aufgetreten.",
+      "EmailSignInError": "Anmeldung mit E-Mail nicht möglich.",
+      "CredentialsSignin": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
+      "default": "Ein Authentifizierungsfehler ist aufgetreten.",
+      "loading": "Wird geladen..."
+    }
+  },
+  "profile": {
+    "title": "Profil-Einstellungen",
+    "backToWishlists": "Zurück zu den Wunschlisten",
+    "loading": "Wird geladen...",
+    "profileInfo": {
+      "title": "Profil-Informationen",
+      "displayName": "Anzeigename",
+      "displayNamePlaceholder": "Ihr Name",
+      "avatarUrl": "Avatar-URL",
+      "avatarUrlPlaceholder": "https://beispiel.de/avatar.jpg",
+      "useGravatar": "Gravatar verwenden",
+      "saveButton": "Profil speichern",
+      "saving": "Wird gespeichert...",
+      "successMessage": "Profil erfolgreich aktualisiert!",
+      "errorMessage": "Fehler beim Aktualisieren des Profils"
+    },
+    "email": {
+      "title": "E-Mail ändern",
+      "currentEmail": "Aktuelle E-Mail:",
+      "newEmail": "Neue E-Mail-Adresse",
+      "newEmailPlaceholder": "neu@beispiel.de",
+      "confirmPassword": "Mit Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Ihr aktuelles Passwort",
+      "changeButton": "E-Mail ändern",
+      "changing": "Wird geändert...",
+      "successMessage": "E-Mail erfolgreich geändert! Bitte melden Sie sich erneut an.",
+      "errorMessage": "Fehler beim Ändern der E-Mail"
+    },
+    "password": {
+      "title": "Passwort ändern",
+      "currentPassword": "Aktuelles Passwort",
+      "currentPasswordPlaceholder": "Aktuelles Passwort eingeben",
+      "newPassword": "Neues Passwort",
+      "newPasswordPlaceholder": "Neues Passwort eingeben (min. 6 Zeichen)",
+      "confirmPassword": "Neues Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Neues Passwort bestätigen",
+      "changeButton": "Passwort ändern",
+      "changing": "Wird geändert...",
+      "successMessage": "Passwort erfolgreich geändert!",
+      "errorMessage": "Fehler beim Ändern des Passworts",
+      "passwordsNoMatch": "Passwörter stimmen nicht überein",
+      "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein"
+    }
+  }
+}

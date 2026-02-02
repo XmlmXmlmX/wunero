@@ -1,14 +1,6 @@
-import { WuFeatureList } from "@/components/organisms/WuFeatureList/WuFeatureList";
-import { WuHeroSection } from "@/components/organisms/WuHeroSection/WuHeroSection";
-import styles from "./page.module.css";
+import { redirect } from 'next/navigation';
+import { routing } from '@/i18n';
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <WuHeroSection />
-        <WuFeatureList id="features" />
-      </main>
-    </div>
-  );
+export default function RootPage() {
+  redirect(`/${routing.defaultLocale}`);
 }

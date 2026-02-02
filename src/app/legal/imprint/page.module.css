@@ -1,0 +1,52 @@
+.pageHeader {
+  margin-bottom: 2rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.section h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
+  color: #555;
+}
+
+.section p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.section ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.section li {
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.section a {
+  color: var(--primary-color, #007bff);
+  text-decoration: none;
+}
+
+.section a:hover {
+  text-decoration: underline;
+}

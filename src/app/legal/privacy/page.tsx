@@ -1,7 +1,13 @@
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
-import styles from "../legal.module.css";
+import { notFound } from 'next/navigation';
+import { isLegalFeaturesEnabled } from '@/lib/legal-features';
+import styles from "./page.module.css";
 
 export default function PrivacyPage() {
+  if (!isLegalFeaturesEnabled()) {
+    notFound();
+  }
+
   return (
     <main>
       <WuPageHeader

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { WuModal } from '@/components/molecules/WuModal/WuModal';
-import { WuButton } from '@/components/atoms';
+import { WuButton, WuLanguageSwitcher } from '@/components/atoms';
 import { WuSwitch } from '@/components/atoms';
 import {
   getConsent,
@@ -14,12 +15,24 @@ import {
 import styles from './WuCookieBanner.module.css';
 
 const WuCookieBanner: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(() => !getConsent());
+  const t = useTranslations('cookies');
+  const [isOpen, setIsOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [consent, setConsentState] = useState(() => {
+  const [consent, setConsentState] = useState(() => getDefaultConsent());
+  const [isClient, setIsClient] = useState(false);
+
+  // Initialize on client-side only to prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
     const stored = getConsent();
-    return stored || getDefaultConsent();
-  });
+    if (stored) {
+      setConsentState(stored);
+      setIsOpen(false);
+    } else {
+      setConsentState(getDefaultConsent());
+      setIsOpen(true);
+    }
+  }, []);
 
   const handleAcceptAll = () => {
     acceptAll();
@@ -44,22 +57,25 @@ const WuCookieBanner: React.FC = () => {
     setConsentState(prev => ({ ...prev, marketing: checked }));
   };
 
-  if (!isOpen) return null;
+  // Only render after hydration to prevent mismatch
+  if (!isClient || !isOpen) return null;
 
   return (
     <WuModal
       isOpen={isOpen}
       onClose={() => {}} // Prevent closing without selection
-      title="🍪 Cookie-Einstellungen"
+      title={t('title')}
       closeOnOverlayClick={false}
     >
       <div className={styles.content}>
+        <div className={styles.languageSwitcher}>
+          <WuLanguageSwitcher />
+        </div>
+        
         {!showDetails ? (
           <>
             <p className={styles.description}>
-              Wir verwenden Cookies, um Ihnen das beste Erlebnis auf unserer Website zu bieten. 
-              Einige Cookies sind notwendig für die Funktionalität, während andere uns helfen, 
-              die Website zu verbessern und Ihnen personalisierte Inhalte anzuzeigen.
+              {t('description')}
             </p>
             
             <div className={styles.actions}>
@@ -68,28 +84,28 @@ const WuCookieBanner: React.FC = () => {
                 variant="primary"
                 fullWidth
               >
-                Alle akzeptieren
+                {t('acceptAll')}
               </WuButton>
               <WuButton
                 onClick={handleAcceptNecessary}
                 variant="secondary"
                 fullWidth
               >
-                Nur notwendige
+                {t('acceptNecessary')}
               </WuButton>
               <WuButton
                 className={styles.detailsButton}
                 variant='ghost'
                 onClick={() => setShowDetails(true)}
               >
-                Einstellungen anpassen
+                {t('customize')}
               </WuButton>
             </div>
 
             <p className={styles.privacyLink}>
-              Weitere Informationen finden Sie in unserer{' '}
+              {t('privacyLinkText')}{' '}
               <a href="/legal/privacy" target="_blank" rel="noopener noreferrer">
-                Datenschutzerklärung
+                {t('privacyLink')}
               </a>
             </p>
           </>
@@ -98,7 +114,7 @@ const WuCookieBanner: React.FC = () => {
             <div className={styles.cookieSettings}>
               <div className={styles.cookieGroup}>
                 <div className={styles.cookieHeader}>
-                  <h3>Notwendige Cookies</h3>
+                  <h3>{t('necessary.title')}</h3>
                   <WuSwitch
                     checked={true}
                     onChange={() => {}}
@@ -107,14 +123,13 @@ const WuCookieBanner: React.FC = () => {
                   />
                 </div>
                 <p className={styles.cookieDescription}>
-                  Diese Cookies sind für die Grundfunktionen der Website erforderlich und können 
-                  nicht deaktiviert werden. Sie speichern z.B. Ihre Anmeldung und Cookie-Präferenzen.
+                  {t('necessary.description')}
                 </p>
               </div>
 
               <div className={styles.cookieGroup}>
                 <div className={styles.cookieHeader}>
-                  <h3>Analytik-Cookies</h3>
+                  <h3>{t('analytics.title')}</h3>
                   <WuSwitch
                     checked={consent.analytics}
                     onChange={handleToggleAnalytics}
@@ -122,14 +137,13 @@ const WuCookieBanner: React.FC = () => {
                   />
                 </div>
                 <p className={styles.cookieDescription}>
-                  Diese Cookies helfen uns zu verstehen, wie Besucher mit unserer Website interagieren, 
-                  indem Informationen anonym gesammelt und gemeldet werden.
+                  {t('analytics.description')}
                 </p>
               </div>
 
               <div className={styles.cookieGroup}>
                 <div className={styles.cookieHeader}>
-                  <h3>Marketing-Cookies</h3>
+                  <h3>{t('marketing.title')}</h3>
                   <WuSwitch
                     checked={consent.marketing}
                     onChange={handleToggleMarketing}
@@ -137,8 +151,7 @@ const WuCookieBanner: React.FC = () => {
                   />
                 </div>
                 <p className={styles.cookieDescription}>
-                  Diese Cookies werden verwendet, um Ihnen relevante Werbung und Angebote anzuzeigen. 
-                  Sie können auch zur Messung der Effektivität von Werbekampagnen verwendet werden.
+                  {t('marketing.description')}
                 </p>
               </div>
             </div>
@@ -148,13 +161,13 @@ const WuCookieBanner: React.FC = () => {
                 onClick={() => setShowDetails(false)}
                 variant="secondary"
               >
-                Zurück
+                {t('back')}
               </WuButton>
               <WuButton
                 onClick={handleSavePreferences}
                 variant="primary"
               >
-                Einstellungen speichern
+                {t('savePreferences')}
               </WuButton>
             </div>
           </>

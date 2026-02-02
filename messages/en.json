@@ -1,0 +1,189 @@
+{
+  "app": {
+    "name": "Wunero"
+  },
+  "home": {
+    "badge": "🎉 Joy starts with a wish",
+    "title": "Collect, organize, and share wishes with ease",
+    "subtitle": "Wunero keeps your wishlist tidy across occasions. Add products from Amazon, eBay, and Idealo, then share with friends in one click.",
+    "getStarted": "Get started",
+    "viewWishlists": "View my wishlists"
+  },
+  "cookies": {
+    "title": "🍪 Cookie Settings",
+    "description": "We use cookies to provide you with the best experience on our website. Some cookies are necessary for functionality, while others help us improve the website and show you personalized content.",
+    "acceptAll": "Accept All",
+    "acceptNecessary": "Only Necessary",
+    "customize": "Customize Settings",
+    "back": "Back",
+    "savePreferences": "Save Preferences",
+    "privacyLinkText": "For more information, please see our",
+    "privacyLink": "Privacy Policy",
+    "necessary": {
+      "title": "Necessary Cookies",
+      "description": "These cookies are required for the basic functions of the website and cannot be disabled. They store, for example, your login and cookie preferences."
+    },
+    "analytics": {
+      "title": "Analytics Cookies",
+      "description": "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously."
+    },
+    "marketing": {
+      "title": "Marketing Cookies",
+      "description": "These cookies are used to show you relevant advertising and offers. They can also be used to measure the effectiveness of advertising campaigns."
+    }
+  },
+  "footer": {
+    "imprint": "Imprint",
+    "privacy": "Privacy",
+    "cookieSettings": "Cookie Settings",
+    "copyright": "© {year} Wunero. All rights reserved."
+  },
+  "nav": {
+    "profile": "Profile Settings",
+    "wishlists": "My Wishlists",
+    "signOut": "Sign Out",
+    "userMenu": "User menu"
+  },
+  "auth": {
+    "signin": {
+      "title": "Welcome to Wunero",
+      "subtitle": "Sign in to manage your wishlists",
+      "email": "Email",
+      "password": "Password",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "signInButton": "Sign in",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register here",
+      "backToHome": "Back to Home",
+      "continueWith": "Continue with {provider}",
+      "invalidCredentials": "Invalid email or password",
+      "authFailed": "Authentication failed"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Join Wunero and start collecting wishes",
+      "subtitleInvite": "Join a wishlist and connect with friends",
+      "email": "Email",
+      "password": "Password (min 8 characters)",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "••••••••",
+      "registerButton": "Register",
+      "registering": "Creating Account...",
+      "alreadyAccount": "Already have an account?",
+      "signinLink": "Sign in here",
+      "backToHome": "Back to Home",
+      "infoText": "Create a new account to manage your wishlists, add items, and share with friends.",
+      "invitationText": "🎁 You've been invited to join a wishlist. Create your account to accept the invitation!",
+      "dividerOr": "or",
+      "secureAuth": "We use secure credential-based authentication.",
+      "loading": "Loading...",
+      "registrationFailed": "Registration failed"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email and we'll send you a reset link",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "sendButton": "Send Reset Link",
+      "sending": "Sending...",
+      "rememberPassword": "Remember your password?",
+      "signinLink": "Sign in here",
+      "backToHome": "Back to Home",
+      "errorSending": "Failed to send reset link",
+      "errorOccurred": "An error occurred. Please try again."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password",
+      "password": "New Password (min 8 characters)",
+      "confirmPassword": "Confirm Password",
+      "passwordPlaceholder": "••••••••",
+      "resetButton": "Reset Password",
+      "resetting": "Resetting...",
+      "backToHome": "Back to Home",
+      "invalidLink": "Invalid Reset Link",
+      "linkExpired": "The password reset link is invalid or has expired.",
+      "requestNewLink": "Request New Link",
+      "success": "Password reset successful! Redirecting to sign in...",
+      "passwordsNoMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "errorResetting": "Failed to reset password",
+      "errorOccurred": "An error occurred. Please try again.",
+      "rememberPassword": "Remember your password?",
+      "signinLink": "Sign in here"
+    },
+    "verifyEmail": {
+      "verifying": "Verifying your email...",
+      "pleaseWait": "Please wait while we verify your account.",
+      "verified": "Email Verified!",
+      "redirecting": "Redirecting to sign in...",
+      "goToSignin": "Go to Sign In",
+      "verificationFailed": "Verification Failed",
+      "backToRegistration": "Back to Registration",
+      "noToken": "No verification token provided",
+      "verificationError": "Failed to verify email. Please try again.",
+      "loading": "Loading..."
+    },
+    "error": {
+      "title": "Authentication Error",
+      "tryAgain": "Try Again",
+      "backToHome": "Back to Home",
+      "OAuthSignin": "Error connecting to provider. Please try again.",
+      "OAuthCallback": "Error during callback. Please try again.",
+      "OAuthCreateAccount": "Could not create account with provider.",
+      "EmailCreateAccount": "Could not create account.",
+      "Callback": "An error occurred in the callback handler.",
+      "EmailSignInError": "Could not sign in with email.",
+      "CredentialsSignin": "Sign in failed. Please check your credentials.",
+      "default": "An authentication error occurred.",
+      "loading": "Loading..."
+    }
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "backToWishlists": "Back to Wishlists",
+    "loading": "Loading...",
+    "profileInfo": {
+      "title": "Profile Information",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "Your name",
+      "avatarUrl": "Avatar URL",
+      "avatarUrlPlaceholder": "https://example.com/avatar.jpg",
+      "useGravatar": "Use Gravatar",
+      "saveButton": "Save Profile",
+      "saving": "Saving...",
+      "successMessage": "Profile updated successfully!",
+      "errorMessage": "Failed to update profile"
+    },
+    "email": {
+      "title": "Change Email",
+      "currentEmail": "Current email:",
+      "newEmail": "New Email Address",
+      "newEmailPlaceholder": "new@example.com",
+      "confirmPassword": "Confirm with Password",
+      "confirmPasswordPlaceholder": "Your current password",
+      "changeButton": "Change Email",
+      "changing": "Changing...",
+      "successMessage": "Email changed successfully! Please sign in again.",
+      "errorMessage": "Failed to change email"
+    },
+    "password": {
+      "title": "Change Password",
+      "currentPassword": "Current Password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password (min. 6 characters)",
+      "confirmPassword": "Confirm New Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "changeButton": "Change Password",
+      "changing": "Changing...",
+      "successMessage": "Password changed successfully!",
+      "errorMessage": "Failed to change password",
+      "passwordsNoMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters"
+    }
+  }
+}

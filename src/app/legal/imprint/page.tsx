@@ -1,7 +1,13 @@
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
-import styles from "../legal.module.css";
+import { notFound } from 'next/navigation';
+import { isLegalFeaturesEnabled } from '@/lib/legal-features';
+import styles from "./page.module.css";
 
 export default function ImprintPage() {
+  if (!isLegalFeaturesEnabled()) {
+    notFound();
+  }
+
   const name = process.env.NEXT_PUBLIC_IMPRINT_NAME || '[Name nicht konfiguriert]';
   const street = process.env.NEXT_PUBLIC_IMPRINT_STREET || '[Straße nicht konfiguriert]';
   const city = process.env.NEXT_PUBLIC_IMPRINT_CITY || '[Stadt nicht konfiguriert]';

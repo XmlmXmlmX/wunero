@@ -93,10 +93,21 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // If the url is a relative url, prepend the base
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === new URL(baseUrl).origin) {
+        return url;
+      }
+      return baseUrl;
+    },
   },
   pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+    signIn: "/de/auth/signin", // Default locale, middleware will handle locale-specific redirects
+    error: "/de/auth/error", // Default locale
   },
   session: {
     strategy: "jwt",
