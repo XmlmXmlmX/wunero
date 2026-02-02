@@ -11,36 +11,32 @@ const localeRegex = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-
-  // Redirect /auth/* and /profile to locale-prefixed versions
-  if (pathname.startsWith("/auth/") || pathname === "/profile") {
-    const localeMatch = pathname.match(localeRegex);
-    const locale = localeMatch?.[1] ?? routing.defaultLocale;
-    
-    // Preserve query parameters
-    const search = request.nextUrl.search;
-    const newUrl = new URL(`/${locale}${pathname}${search}`, request.nextUrl.origin);
-    return NextResponse.redirect(newUrl);
-  }
-
-  // Handle i18n routing first
-  const intlResponse = intlMiddleware(request);
   
-  // If intl middleware wants to redirect (e.g., / -> /de), do it
-  if (intlResponse.status === 307 || intlResponse.status === 308 || intlResponse.headers.get("location")) {
-    return intlResponse;
+  console.log('[Middleware] Processing:', pathname);
+  
+  const localeMatch = pathname.match(localeRegex);
+  
+  // If no locale prefix, let intlMiddleware handle it (it will redirect to add locale)
+  if (!localeMatch) {
+    console.log('[Middleware] No locale match, calling intlMiddleware for:', pathname);
+    return intlMiddleware(request);
   }
 
-  const localeMatch = pathname.match(localeRegex);
-  const locale = localeMatch?.[1] ?? routing.defaultLocale;
+  // We have a locale prefix, extract it
+  const locale = localeMatch[1];
   const pathnameWithoutLocale = pathname.replace(localeRegex, "");
+  
+  console.log('[Middleware] Locale:', locale, 'Path without locale:', pathnameWithoutLocale);
 
+  // Check if this is a protected route
   const protectedRoutes = ["/wishlists", "/profile"];
   const isProtected = protectedRoutes.some(route => pathnameWithoutLocale.startsWith(route));
 
-  if (!isProtected) return intlResponse;
+  if (!isProtected) {
+    return intlMiddleware(request);
+  }
 
-  // getToken works in the Edge runtime and avoids importing the DB-heavy auth helper
+  // For protected routes, check authentication
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   if (!token?.id) {
     const signInUrl = new URL(`/${locale}/auth/signin`, request.nextUrl.origin);
@@ -48,7 +44,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  return intlResponse;
+  return intlMiddleware(request);
 }
 
 export const config = {
@@ -59,8 +55,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - images, icons, and other public assets
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|xml|webmanifest)$).*)",
   ],
 };

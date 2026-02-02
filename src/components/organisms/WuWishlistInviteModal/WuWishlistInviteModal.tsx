@@ -1,4 +1,4 @@
-import { WuButton, WuInput } from "@/components/atoms";
+import { WuButton, WuInput, WuSpinner } from "@/components/atoms";
 import { WuAvatar } from "@/components/atoms/WuAvatar/WuAvatar";
 import { WuModal } from "@/components/molecules/WuModal/WuModal";
 import styles from "./WuWishlistInviteModal.module.css";
@@ -61,7 +61,7 @@ export function WuWishlistInviteModal({
         </div>
         {memberError && <p className={styles.memberError}>{memberError}</p>}
         {membersLoading ? (
-          <p className={styles.memberHint}>Loading members...</p>
+          <div className={styles.memberHint}><WuSpinner size="sm" /></div>
         ) : (
           <ul className={styles.membersList}>
             {members.length === 0 && <li className={styles.memberHint}>No members yet.</li>}

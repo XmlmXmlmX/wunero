@@ -12,8 +12,11 @@ const variantClassName: Record<WuButtonVariant, string> = {
 
 export type WuButtonVariant = "primary" | "secondary" | "outline" | "danger" | "ghost";
 
+export type WuButtonSize = "sm" | "md" | "lg";
+
 export type WuButtonProps = WuAtom<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>> & {
   variant?: WuButtonVariant;
+  size?: WuButtonSize;
   fullWidth?: boolean;
   isLoading?: boolean;
   animatedIconRef?: React.RefObject<AnimatedIconHandle | null>;
@@ -23,6 +26,7 @@ export function WuButton({
   children,
   className,
   variant = "primary",
+  size = "md",
   fullWidth,
   isLoading,
   type = "button",
@@ -42,7 +46,9 @@ export function WuButton({
     onMouseLeave?.(e);
   };
 
-  const classes = [styles.button, variantClassName[variant], fullWidth ? styles.fullWidth : "", className]
+  const btnSize = size === "sm" ? styles.sm : size === "lg" ? styles.lg : styles.md;
+
+  const classes = [styles.button, variantClassName[variant], btnSize, fullWidth ? styles.fullWidth : "", className]
     .filter(Boolean)
     .join(" ");
 

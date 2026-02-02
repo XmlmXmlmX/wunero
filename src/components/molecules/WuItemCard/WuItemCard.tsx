@@ -5,7 +5,7 @@ import { getShopName } from "@/lib/productParser";
 import { type WishItem, type WishItemImportance, type Currency } from "@/types";
 import { type WuMolecule } from "@/types/WuMolecule";
 import type { AnimatedIconHandle } from "@/components/ui/types";
-import { ChevronUpIcon, ChevronDownIcon, PenIcon } from "lucide-react";
+import { ChevronUpIcon, ChevronDownIcon, PenIcon, Trash, TrashIcon } from "lucide-react";
 import styles from "./WuItemCard.module.css";
 import ExternalLinkIcon from "@/components/ui/external-link-icon";
 import ShoppingCartIcon from "@/components/ui/shopping-cart-icon";
@@ -20,13 +20,37 @@ interface WuItemCardProps extends WuMolecule<HTMLDivElement> {
   isOwner?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
+  translations?: {
+    purchased: string;
+    mustHave: string;
+    wouldLove: string;
+    niceToHave: string;
+    notSure: string;
+    viewOn: string;
+    unmarkOne: string;
+    markAsPurchased: string;
+    markOneAsPurchased: string;
+    edit: string;
+    delete: string;
+    moveUp: string;
+    moveDown: string;
+  };
 }
 
-const importanceLabels: Record<WishItemImportance, string> = {
-  "must-have": "Must have",
-  "would-love": "Would love",
-  "nice-to-have": "Nice to have",
-  "not-sure": "Not sure",
+const defaultTranslations = {
+  purchased: "Purchased",
+  mustHave: "Must have",
+  wouldLove: "Would love",
+  niceToHave: "Nice to have",
+  notSure: "Not sure",
+  viewOn: "View on",
+  unmarkOne: "Unmark one",
+  markAsPurchased: "Mark as Purchased",
+  markOneAsPurchased: "Mark one as Purchased",
+  edit: "Edit",
+  delete: "Delete",
+  moveUp: "Move up",
+  moveDown: "Move down",
 };
 
 const importanceVariants: Record<WishItemImportance, "default" | "primary" | "danger"> = {
@@ -51,10 +75,21 @@ export function WuItemCard({
   onMoveDown, 
   isOwner = true, 
   isFirst = false, 
-  isLast = false, 
+  isLast = false,
+  translations = defaultTranslations,
   className, 
   ...rest 
 }: WuItemCardProps) {
+  const t = translations;
+  
+  // Importance labels with translations
+  const importanceLabels: Record<WishItemImportance, string> = {
+    "must-have": t.mustHave,
+    "would-love": t.wouldLove,
+    "nice-to-have": t.niceToHave,
+    "not-sure": t.notSure,
+  };
+  
   // Refs for animated icons
   const shoppingCartRef = useRef<AnimatedIconHandle>(null);
   const externalLinkRef = useRef<AnimatedIconHandle>(null);
@@ -98,7 +133,7 @@ export function WuItemCard({
               <WuBadge variant={importanceVariants[item.importance]}>
                 {importanceLabels[item.importance]}
               </WuBadge>
-              {isFullyPurchased && <WuBadge variant="primary">Purchased</WuBadge>}
+              {isFullyPurchased && <WuBadge variant="primary">{t.purchased}</WuBadge>}
             </div>
           </div>
 
@@ -117,7 +152,7 @@ export function WuItemCard({
               onClick={() => onMoveUp?.(item.id)}
               disabled={isFirst}
               className={styles.reorderButton}
-              aria-label="Move up"
+              aria-label={t.moveUp}
             >
               <ChevronUpIcon size={20} />
             </button>
@@ -126,7 +161,7 @@ export function WuItemCard({
               onClick={() => onMoveDown?.(item.id)}
               disabled={isLast}
               className={styles.reorderButton}
-              aria-label="Move down"
+              aria-label={t.moveDown}
             >
               <ChevronDownIcon size={20} />
             </button>
@@ -136,7 +171,7 @@ export function WuItemCard({
       <div className={styles.actions}>
         {showUrl && (
           <div className={styles.bottomLinks}><WuButtonLink href={showUrl} target="_blank" rel="noopener noreferrer" variant="ghost" style={{ '--icon-horse-url': `url(${getIconHorseUrl(item.url!)})` } as React.CSSProperties} className={styles.horseIcon}>
-            View on {getShopName(item.url!)} <ExternalLinkIcon ref={externalLinkRef} />
+            {t.viewOn} {getShopName(item.url!)} <ExternalLinkIcon ref={externalLinkRef} />
           </WuButtonLink></div>
         )}
         <WuButton
@@ -145,17 +180,17 @@ export function WuItemCard({
           onClick={() => onTogglePurchased(item)}
           animatedIconRef={shoppingCartRef}
         >
-          {isFullyPurchased ? "Unmark one" : <><ShoppingCartIcon ref={shoppingCartRef} /> {totalQty > 1 ? "Mark one as Purchased" : "Mark as Purchased"}</>}
+          {isFullyPurchased ? t.unmarkOne : <><ShoppingCartIcon ref={shoppingCartRef} /> {totalQty > 1 ? t.markOneAsPurchased : t.markAsPurchased}</>}
         </WuButton>
         {isOwner && (
           <>
             {onEdit && (
               <WuButton type="button" variant="outline" onClick={() => onEdit(item.id)} animatedIconRef={editIconRef}>
-                <PenIcon ref={editIconRef} size={16} /> Edit
+                <PenIcon ref={editIconRef} size={16} aria-label= {t.edit} />
               </WuButton>
             )}
             <WuButton type="button" variant="danger" onClick={() => onDelete(item.id)}>
-              Delete
+              <TrashIcon aria-label={t.delete} />
             </WuButton>
           </>
         )}
