@@ -7,7 +7,21 @@
     "title": "Wünsche sammeln, organisieren und teilen – ganz einfach",
     "subtitle": "Verwalte deine Wunschlisten für jeden Anlass an einem Ort. Ergänze Produkte von Amazon, eBay und Idealo und teile sie mit wenigen Klicks mit Freunden.",
     "getStarted": "Jetzt starten",
-    "viewWishlists": "Zu meinen Wunschlisten"
+    "viewWishlists": "Zu meinen Wunschlisten",
+    "features": {
+      "create": {
+        "title": "Wunschlisten erstellen",
+        "description": "Organisiere deine Wünsche in Listen für Events, Personen oder Anlässe – damit nichts vergessen wird."
+      },
+      "link": {
+        "title": "Produkte verlinken",
+        "description": "Füge Links von Amazon, eBay oder Idealo hinzu und speichere wichtige Details direkt bei deinen Notizen."
+      },
+      "share": {
+        "title": "Einfach teilen",
+        "description": "Schicke einen Link an Freunde oder Familie – so wissen alle genau, was du dir wünschst."
+      }
+    }
   },
   "cookies": {
     "title": "🍪 Deine Cookie-Einstellungen",
