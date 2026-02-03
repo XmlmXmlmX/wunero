@@ -1,3 +1,4 @@
+import { useLocale } from "next-intl";
 import { WuButton, WuButtonLink, WuBadge } from "@/components/atoms";
 import { type Wishlist } from "@/types";
 import { type WuMolecule } from "@/types/WuMolecule";
@@ -40,8 +41,17 @@ const defaultTranslations = {
 };
 
 export function WuWishlistCard({ wishlist, onDelete, isFollowed = false, translations = defaultTranslations, className, ...rest }: WuWishlistCardProps) {
+  const locale = useLocale();
   const t = translations;
-  const createdDate = new Date(wishlist.created_at).toLocaleDateString();
+  // Ensure created_at is a number (handles both number and string from DB)
+  const createdTimestamp = typeof wishlist.created_at === 'string' ? parseInt(wishlist.created_at, 10) : wishlist.created_at;
+  const createdDate = new Date(createdTimestamp).toLocaleDateString(locale);
+  
+  const followedTimestamp = wishlist.followed_at 
+    ? (typeof wishlist.followed_at === 'string' ? parseInt(wishlist.followed_at, 10) : wishlist.followed_at)
+    : createdTimestamp;
+  const followedDate = new Date(followedTimestamp).toLocaleDateString(locale);
+  
   const classes = [styles.card, className].filter(Boolean).join(" ");
   return (
     <div className={classes} {...rest}>
@@ -74,7 +84,7 @@ export function WuWishlistCard({ wishlist, onDelete, isFollowed = false, transla
         )}
       </div>
       <div className={styles.meta}>
-        {isFollowed ? `${t.followingSince} ${new Date(wishlist.followed_at || wishlist.created_at).toLocaleDateString()}` : `${t.created} ${createdDate}`}
+        {isFollowed ? `${t.followingSince} ${followedDate}` : `${t.created} ${createdDate}`}
       </div>
       <div className={styles.actions}>
         <WuButtonLink href={`/wishlists/${wishlist.id}`} variant="primary" fullWidth>

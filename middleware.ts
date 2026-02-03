@@ -7,44 +7,58 @@ import type {} from "@/types/next-auth";
 
 const intlMiddleware = createMiddleware(routing);
 
-const localeRegex = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
+// Locale pattern: only 2 letter codes (de, en, etc.)
+const localePattern = routing.locales.join("|");
+const localeRegex = new RegExp(`^/(${localePattern})(?=/|$)`);
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  console.log('[Middleware] Processing:', pathname);
+  // Run intlMiddleware first - it handles locale detection and redirection
+  const intlResponse = intlMiddleware(request);
   
-  const localeMatch = pathname.match(localeRegex);
-  
-  // If no locale prefix, let intlMiddleware handle it (it will redirect to add locale)
-  if (!localeMatch) {
-    console.log('[Middleware] No locale match, calling intlMiddleware for:', pathname);
-    return intlMiddleware(request);
+  // If intlMiddleware is redirecting, return that response
+  if (intlResponse.status !== 200) {
+    return intlResponse;
   }
 
-  // We have a locale prefix, extract it
-  const locale = localeMatch[1];
-  const pathnameWithoutLocale = pathname.replace(localeRegex, "");
+  // Extract locale from the path
+  const localeMatch = pathname.match(localeRegex);
   
-  console.log('[Middleware] Locale:', locale, 'Path without locale:', pathnameWithoutLocale);
+  // If no valid locale prefix, intlMiddleware already handled it
+  if (!localeMatch) {
+    return intlResponse;
+  }
+
+  const locale = localeMatch[1];
+  const pathnameWithoutLocale = pathname.slice(`/${locale}`.length) || "/";
 
   // Check if this is a protected route
   const protectedRoutes = ["/wishlists", "/profile"];
-  const isProtected = protectedRoutes.some(route => pathnameWithoutLocale.startsWith(route));
+  const isProtected = protectedRoutes.some(route => 
+    pathnameWithoutLocale.startsWith(route)
+  );
 
   if (!isProtected) {
-    return intlMiddleware(request);
+    return intlResponse;
   }
 
   // For protected routes, check authentication
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ 
+    req: request, 
+    secret: process.env.NEXTAUTH_SECRET 
+  });
+  
   if (!token?.id) {
-    const signInUrl = new URL(`/${locale}/auth/signin`, request.nextUrl.origin);
+    const signInUrl = new URL(
+      `/${locale}/auth/signin`, 
+      request.nextUrl.origin
+    );
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
-  return intlMiddleware(request);
+  return intlResponse;
 }
 
 export const config = {

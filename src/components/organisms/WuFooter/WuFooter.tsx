@@ -1,24 +1,25 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import { reopenConsentBanner } from '@/lib/cookies';
 import styles from './WuFooter.module.css';
 
 const WuFooter: React.FC = () => {
   const t = useTranslations('footer');
+  const locale = useLocale();
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.links}>
-          <Link href="/legal/imprint" className={styles.link}>
+          <Link href={`/${locale}/legal/imprint`} className={styles.link}>
             {t('imprint')}
           </Link>
           <span className={styles.divider}>•</span>
-          <Link href="/legal/privacy" className={styles.link}>
+          <Link href={`/${locale}/legal/privacy`} className={styles.link}>
             {t('privacy')}
           </Link>
           <span className={styles.divider}>•</span>

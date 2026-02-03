@@ -40,8 +40,7 @@ export function WuLanguageSwitcher() {
           aria-expanded={isOpen}
           aria-haspopup="listbox"
         >
-          <span className={`fi fi-${currentLanguage.flag}`} />
-          <span className={styles.label}>{currentLanguage.name}</span>
+          <span className={`fi fi-${currentLanguage.flag}`} aria-label={currentLanguage.name} />
           <svg className={`${styles.chevron} ${isOpen ? styles.open : ''}`} width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>

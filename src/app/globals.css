@@ -123,3 +123,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Flag icon base styles */
+.fi {
+  border-radius: 3px;
+  background-size: contain;
+  width: calc(4rem / 3);
+  filter: contrast(0.85) saturate(.85);
+}
