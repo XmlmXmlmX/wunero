@@ -176,7 +176,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
 
     try {
       const response = await fetch(`/api/wishlists/${id}/items/${editingItemId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
@@ -794,9 +794,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
           )}
 
           {showNewForm && (
-            <div className={styles.section}>
-              <WuItemForm onSubmit={createItem} onCancel={() => setShowNewForm(false)} />
-            </div>
+            <WuItemForm inModal onSubmit={createItem} onCancel={() => setShowNewForm(false)} />
           )}
 
           {items.length === 0 ? (
@@ -819,23 +817,23 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                 
                 if (isEditing) {
                   return (
-                    <div key={item.id} className={styles.section}>
-                      <WuItemForm 
-                        isEditMode
-                        initialValues={{
-                          title: item.title,
-                          description: item.description || "",
-                          url: item.url || "",
-                          priority: item.priority,
-                          quantity: item.quantity,
-                          importance: item.importance,
-                          price: item.price || "",
-                          currency: item.currency,
-                        }}
-                        onSubmit={updateItem}
-                        onCancel={() => setEditingItemId(null)}
-                      />
-                    </div>
+                    <WuItemForm 
+                      key={item.id}
+                      inModal
+                      isEditMode
+                      initialValues={{
+                        title: item.title,
+                        description: item.description || "",
+                        url: item.url || "",
+                        priority: item.priority,
+                        quantity: item.quantity,
+                        importance: item.importance,
+                        price: item.price || "",
+                        currency: item.currency,
+                      }}
+                      onSubmit={updateItem}
+                      onCancel={() => setEditingItemId(null)}
+                    />
                   );
                 }
                 

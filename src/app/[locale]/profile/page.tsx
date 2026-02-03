@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n";
 import { WuButton, WuInput, WuAvatar } from "@/components/atoms";
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
 import { getGravatarUrl } from "@/lib/gravatar";

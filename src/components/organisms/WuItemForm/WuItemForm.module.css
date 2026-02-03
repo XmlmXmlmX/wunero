@@ -178,24 +178,6 @@
   border-radius: 0.375rem;
 }
 
-.select {
-  border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
-  padding: 0.8rem 1rem;
-  font-size: 1rem;
-  color: #111827;
-  background-color: #ffffff;
-  outline: none;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
-  cursor: pointer;
-  width: 100%;
-}
-
-.select:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-}
-
 .urlGroupLoading {
   position: relative;
 }

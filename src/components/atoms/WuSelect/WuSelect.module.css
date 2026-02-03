@@ -1,0 +1,133 @@
+.selectButton {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  color: #111827;
+  background-color: #ffffff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.selectButton:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+
+.selectButton:focus,
+.selectButton:focus-visible {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.selectButton.open {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.selectButton:disabled {
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+
+.selectButton.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.label {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: .5rem;
+}
+
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+
+.selectButton.open .chevron {
+  transform: rotate(180deg);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 200px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.95rem;
+  transition: background-color 120ms ease;
+  border-radius: .25rem;
+}
+
+.option svg, .selectButton svg {
+    height: 1em;
+    width: 1em;
+    font-size: .75em;
+}
+
+.option:hover {
+  background-color: #f3f4f6;
+}
+
+.option:active {
+  background-color: #e5e7eb;
+}
+
+.option.selected {
+  background-color: #eef2ff;
+  color: #312e81;
+  font-weight: 500;
+}
+
+.option.selected:hover {
+  background-color: #dbeafe;
+}
+
+.checkmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #312e81;
+  flex-shrink: 0;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.error {
+  border-color: #ef4444;
+}

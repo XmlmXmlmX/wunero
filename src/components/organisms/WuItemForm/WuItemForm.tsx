@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { WuButton, WuInput, WuTextArea, WuCheckbox } from "@/components/atoms";
+import { useTranslations } from "next-intl";
+import { WuButton, WuInput, WuTextArea, WuCheckbox, WuSelect } from "@/components/atoms";
 import type { AnimatedIconHandle } from "@/components/ui/types";
 import { WuInputGroup } from "@/components/molecules/WuInputGroup/WuInputGroup";
 import { WuModal } from "@/components/molecules/WuModal/WuModal";
@@ -8,6 +9,7 @@ import { isSupportedPlatform } from "@/lib/productParser";
 import { type WuOrganism } from "@/types/WuOrganism";
 import type { WishItemImportance, Currency } from "@/types";
 import styles from "./WuItemForm.module.css";
+import { HeartIcon } from "lucide-react";
 
 interface WuItemFormProps extends Omit<WuOrganism<HTMLDivElement>, 'onSubmit'> {
   onSubmit: (payload: { 
@@ -32,6 +34,7 @@ interface WuItemFormProps extends Omit<WuOrganism<HTMLDivElement>, 'onSubmit'> {
     currency?: Currency;
   };
   isEditMode?: boolean;
+  inModal?: boolean;
 }
 
 interface ParsedProductData {
@@ -43,7 +46,10 @@ interface ParsedProductData {
   timedOut?: boolean;
 }
 
-export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = false, className, ...rest }: WuItemFormProps) {
+export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = false, inModal = false, className, ...rest }: WuItemFormProps) {
+  const t = useTranslations("wishlists.itemForm");
+  const tItem = useTranslations("wishlists.item");
+  
   // Ref for animated icon
   const externalLinkIconRef = useRef<AnimatedIconHandle>(null);
 
@@ -213,19 +219,20 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
   };
 
   const classes = [styles.card, className].filter(Boolean).join(" ");
-  return (
-    <div className={classes} {...rest}>
-      <h3 className={styles.title}>{isEditMode ? "Edit Item" : "Add New Item"}</h3>
+  
+  const formContent = (
+    <div className={inModal ? "" : classes} {...(inModal ? {} : rest)}>
+      {!inModal && <h3 className={styles.title}>{isEditMode ? t("editTitle") : t("addTitle")}</h3>}
       
       {!showManualForm ? (
         // Step 1: URL Input
         <div className={styles.urlStep}>
           <p className={styles.hint}>
-            Paste a product URL to automatically fill in details, or skip to add manually.
+            {t("urlHint")}
           </p>
           <div className={styles.field}>
             <label htmlFor="item-url-input" className={styles.label}>
-              Product URL (Optional)
+              {t("urlLabel")}
             </label>
             {isValidUrl(url) ? (
               <WuInputGroup
@@ -234,7 +241,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                 inputProps={{
                   id: "item-url-input",
                   type: "url",
-                  placeholder: "https://www.amazon.com/...",
+                  placeholder: t("urlPlaceholder"),
                   value: url,
                   onChange: (event) => setUrl(event.target.value),
                   onKeyDown: (e) => {
@@ -248,7 +255,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                 buttonProps={{
                   type: "button",
                   variant: "ghost",
-                  title: "Open URL in new tab",
+                  title: t("openInNewTab"),
                   onClick: () => window.open(url, "_blank", "noopener,noreferrer"),
                   animatedIconRef: externalLinkIconRef,
                   children: <ExternalLinkIcon ref={externalLinkIconRef} size={18} />,
@@ -258,7 +265,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
               <WuInput
                 id="item-url-input"
                 type="url"
-                placeholder="https://www.amazon.com/..."
+                placeholder={t("urlPlaceholder")}
                 value={url}
                 onChange={(event) => setUrl(event.target.value)}
                 onKeyDown={(e) => {
@@ -271,7 +278,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
               />
             )}
             {url && isSupportedPlatform(url) && (
-              <p className={styles.supportedHint}>✓ Supported platform detected</p>
+              <p className={styles.supportedHint}>{t("supportedPlatform")}</p>
             )}
           </div>
           <div className={styles.actions}>
@@ -281,11 +288,11 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
               onClick={handleParseUrl}
               isLoading={parsing}
             >
-              {parsing ? 'Parsing...' : url.trim() ? 'Parse URL' : 'Skip to Manual Entry'}
+              {parsing ? t("parsing") : url.trim() ? t("parseUrl") : t("skipToManual")}
             </WuButton>
             {onCancel && (
               <WuButton type="button" variant="outline" onClick={onCancel}>
-                Cancel
+                {t("cancel")}
               </WuButton>
             )}
           </div>
@@ -301,7 +308,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
           
           <div className={styles.field}>
             <label htmlFor="item-url" className={styles.label}>
-              Product URL
+              {t("productUrl")}
             </label>
             {isValidUrl(url) ? (
               <div className={styles.urlWithActions}>
@@ -321,7 +328,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                       onClick={handleParseUrl}
                       isLoading={parsing}
                     >
-                      {parsing ? 'Parsing...' : 'Parse'}
+                      {parsing ? t("parsing") : t("parse")}
                     </WuButton>
                   )}
                   <WuButton 
@@ -354,7 +361,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
           
           <div className={styles.field}>
             <label htmlFor="item-title" className={styles.label}>
-              Title *
+              {t("titleRequired")}
             </label>
             <WuInput
               id="item-title"
@@ -368,7 +375,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
           
           <div className={styles.field}>
             <label htmlFor="item-description" className={styles.label}>
-              Description
+              {t("description")}
             </label>
             <WuTextArea
               id="item-description"
@@ -382,39 +389,39 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
           <div className={styles.fieldRow}>
             <div className={styles.field}>
               <label htmlFor="item-price" className={styles.label}>
-                Price
+                {t("price")}
               </label>
               <WuInput
                 id="item-price"
                 type="text"
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
-                placeholder="29.99"
+                placeholder={t("pricePlaceholder")}
                 fullWidth
               />
             </div>
             
             <div className={styles.field}>
               <label htmlFor="item-currency" className={styles.label}>
-                Currency
+                {t("currency")}
               </label>
-              <select
+              <WuSelect
                 id="item-currency"
                 value={currency}
                 onChange={(event) => setCurrency(event.target.value as Currency)}
-                className={styles.select}
+                fullWidth
               >
                 <option value="EUR">€ Euro</option>
                 <option value="GBP">£ British Pound</option>
                 <option value="USD">$ US Dollar</option>
-              </select>
+              </WuSelect>
             </div>
           </div>
           
           <div className={styles.fieldRow}>
             <div className={styles.field}>
               <label htmlFor="item-quantity" className={styles.label}>
-                Quantity
+                {t("quantity")}
               </label>
               <WuInput
                 id="item-quantity"
@@ -431,34 +438,58 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
             
             <div className={styles.field}>
               <label htmlFor="item-importance" className={styles.label}>
-                Importance
+                {t("importance")}
               </label>
-              <select
+              <WuSelect
                 id="item-importance"
                 value={importance}
                 onChange={(event) => setImportance(event.target.value as WishItemImportance)}
-                className={styles.select}
+                fullWidth
               >
-                <option value="must-have">Must have</option>
-                <option value="would-love">Would love</option>
-                <option value="nice-to-have">Nice to have</option>
-                <option value="not-sure">Not sure</option>
-              </select>
+                <option value="must-have">
+                  {tItem("mustHave")}
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon fill="currentColor" />
+                </option>
+                <option value="would-love">
+                  {tItem("wouldLove")}
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon />
+                </option>
+                <option value="nice-to-have">
+                  {tItem("niceToHave")}
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon />
+                  <HeartIcon />
+                </option>
+                <option value="not-sure">
+                  {tItem("notSure")}
+                  <HeartIcon fill="currentColor" />
+                  <HeartIcon />
+                  <HeartIcon />
+                  <HeartIcon />
+                </option>
+              </WuSelect>
             </div>
           </div>
           
           <div className={styles.actions}>
             <WuButton type="submit" variant="primary" isLoading={submitting}>
-              {submitting ? "Saving..." : isEditMode ? "Update Item" : "Add Item"}
+              {submitting ? t("saving") : isEditMode ? t("updateItem") : t("addItem")}
             </WuButton>
             {!isEditMode && (
               <WuButton type="button" variant="outline" onClick={handleReset}>
-                Back
+                {t("back")}
               </WuButton>
             )}
             {onCancel && (
               <WuButton type="button" variant="ghost" onClick={onCancel}>
-                Cancel
+                {t("cancel")}
               </WuButton>
             )}
           </div>
@@ -468,7 +499,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
       {showReparseDialog && newParsedData && (
         <WuModal
           isOpen
-          title="New Product Data Available"
+          title={t("reparseTitle")}
           onClose={() => {
             setShowReparseDialog(false);
             setNewParsedData(null);
@@ -481,7 +512,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                 variant="primary"
                 onClick={handleReparseConfirm}
               >
-                Apply Selected
+                {t("applySelected")}
               </WuButton>
               <WuButton 
                 type="button" 
@@ -492,13 +523,13 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                   setSelectedDataFields(new Set());
                 }}
               >
-                Keep Current Data
+                {t("keepCurrent")}
               </WuButton>
             </>
           )}
         >
           <p className={styles.dialogDescription}>
-            The product URL has changed. Select which information you&apos;d like to update:
+            {t("reparseDescription")}
           </p>
           
           <div className={styles.dataOptions}>
@@ -509,7 +540,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                 onChange={(_checked, _event) => toggleFieldSelection('title')}
                 label={(
                   <span className={styles.dataOptionLabel}>
-                    <span className={styles.dataOptionField}>Title:</span> {newParsedData.title}
+                    <span className={styles.dataOptionField}>{t("fieldTitle")}</span> {newParsedData.title}
                   </span>
                 )}
               />
@@ -521,7 +552,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                 onChange={(_checked, _event) => toggleFieldSelection('price')}
                 label={(
                   <span className={styles.dataOptionLabel}>
-                    <span className={styles.dataOptionField}>Price:</span> {newParsedData.price}
+                    <span className={styles.dataOptionField}>{t("fieldPrice")}</span> {newParsedData.price}
                   </span>
                 )}
               />
@@ -533,7 +564,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                 onChange={(_checked, _event) => toggleFieldSelection('currency')}
                 label={(
                   <span className={styles.dataOptionLabel}>
-                    <span className={styles.dataOptionField}>Currency:</span> {newParsedData.currency}
+                    <span className={styles.dataOptionField}>{t("fieldCurrency")}</span> {newParsedData.currency}
                   </span>
                 )}
               />
@@ -545,7 +576,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
                 onChange={(_checked, _event) => toggleFieldSelection('image')}
                 label={(
                   <span className={styles.dataOptionLabel}>
-                    <span className={styles.dataOptionField}>Product Image</span>
+                    <span className={styles.dataOptionField}>{t("fieldImage")}</span>
                   </span>
                 )}
               />
@@ -555,4 +586,18 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
       )}
     </div>
   );
+  
+  if (inModal) {
+    return (
+      <WuModal
+        isOpen
+        title={isEditMode ? t("editTitle") : t("addTitle")}
+        onClose={onCancel || (() => {})}
+      >
+        {formContent}
+      </WuModal>
+    );
+  }
+  
+  return formContent;
 }
