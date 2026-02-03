@@ -51,12 +51,11 @@ const providers: NextAuthOptions["providers"] = [
 export const authOptions: NextAuthOptions = {
   providers,
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger }) {
       if (user?.id) {
         token.id = user.id as string;
       }
       
-      // When session is updated via update(), refresh user data from database
       if (trigger === "update" && token.id) {
         interface UserData {
           name: string | null;

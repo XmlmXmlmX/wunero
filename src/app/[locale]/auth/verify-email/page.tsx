@@ -18,13 +18,13 @@ function VerifyEmailContent() {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage(t('noToken'));
-      return;
-    }
-
     const verifyEmail = async () => {
+      if (!token) {
+        setStatus("error");
+        setMessage(t('noToken'));
+        return;
+      }
+
       try {
         const response = await fetch(`/api/auth/verify-email?token=${token}`);
         const data = await response.json();

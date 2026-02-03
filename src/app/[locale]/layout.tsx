@@ -17,17 +17,18 @@ export default async function LocaleLayout({
   const { locale } = await params;
   
   // Validate that locale is valid
-  if (!routing.locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as unknown as (typeof routing.locales)[number])) {
     // Redirect to default locale with the original path
     redirect(`/${routing.defaultLocale}`);
   }
   
   // Directly import messages for the current locale
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let messages: any = {};
   try {
-    const module = await import(`../../../messages/${locale}.json`);
-    messages = module.default;
-  } catch (error) {
+    const importedModule = await import(`../../../messages/${locale}.json`);
+    messages = importedModule.default;
+  } catch {
     console.error('Failed to load messages for locale:', locale);
     notFound();
   }

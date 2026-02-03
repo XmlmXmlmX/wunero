@@ -28,7 +28,7 @@ jest.mock('@/i18n', () => ({
     replace: jest.fn()
   }),
   usePathname: () => '/de/profile',
-  Link: ({ children }: any) => <div>{children}</div>
+  Link: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }));
 
 // Mock gravatar
@@ -45,7 +45,7 @@ jest.mock('motion/react', () => ({
     g: 'g'
   },
   useAnimate: () => [null, jest.fn()],
-  AnimatePresence: ({ children }: any) => <>{children}</>
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }));
 
 // Mock icons - return simple divs
@@ -66,9 +66,9 @@ jest.mock('@/components/ui/logout-icon', () => ({
 
 // Mock atoms
 jest.mock('@/components/atoms', () => ({
-  WuAvatar: ({ fallbackText }: any) => <div>{fallbackText}</div>,
+  WuAvatar: ({ fallbackText }: { fallbackText: string }) => <div>{fallbackText}</div>,
   WuLanguageSwitcher: () => <div>LanguageSwitcher</div>,
-  WuDropdown: ({ trigger, children }: any) => (
+  WuDropdown: ({ trigger, children }: { trigger: React.ReactNode; children: React.ReactNode }) => (
     <div>
       <div>{trigger}</div>
       <div>{children}</div>

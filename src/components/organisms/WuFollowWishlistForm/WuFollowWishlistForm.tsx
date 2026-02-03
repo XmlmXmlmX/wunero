@@ -3,6 +3,13 @@ import { WuButton, WuInput } from "@/components/atoms";
 import { type WuOrganism } from "@/types/WuOrganism";
 import styles from "./WuFollowWishlistForm.module.css";
 
+interface FoundWishlist {
+  id: string;
+  title: string;
+  description?: string;
+  owner_email?: string;
+}
+
 interface WuFollowWishlistFormProps extends Omit<WuOrganism<HTMLDivElement>, 'onSubmit'> {
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -13,7 +20,7 @@ export function WuFollowWishlistForm({ onSuccess, onCancel, className, ...rest }
   const [searching, setSearching] = useState(false);
   const [following, setFollowing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [foundWishlist, setFoundWishlist] = useState<any>(null);
+  const [foundWishlist, setFoundWishlist] = useState<FoundWishlist | null>(null);
 
   const handleSearch = async (event: React.FormEvent) => {
     event.preventDefault();

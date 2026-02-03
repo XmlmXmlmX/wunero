@@ -67,7 +67,7 @@ export function WuWishlistForm({ onSubmit, onCancel, submitLabel = "Create Wishl
           <WuCheckbox
             id="is-private"
             checked={isPrivate}
-            onChange={(checked, _event) => setIsPrivate(checked)}
+            onChange={(checked) => setIsPrivate(checked)}
             label="Private - Only you can see this wishlist"
           />
         </div>

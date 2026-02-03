@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname } from '@/i18n';
 import { routing } from '@/i18n';
@@ -19,16 +19,21 @@ export function WuLanguageSwitcher() {
   const locale = useLocale() as LanguageCode;
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [nextLocale, setNextLocale] = useState<string | null>(null);
 
   const currentLanguage = languageConfig[locale] || languageConfig.de;
 
-  const handleLocaleChange = (newLocale: string) => {
-    if (newLocale !== locale) {
+  useEffect(() => {
+    if (nextLocale && nextLocale !== locale) {
       // Use window.location for a full page reload to get new messages
-      const newUrl = `/${newLocale}${pathname}`;
+      const newUrl = `/${nextLocale}${pathname}`;
       window.location.href = newUrl;
     }
+  }, [nextLocale, locale, pathname]);
+
+  const handleLocaleChange = (newLocale: string) => {
     setIsOpen(false);
+    setNextLocale(newLocale);
   };
 
   return (

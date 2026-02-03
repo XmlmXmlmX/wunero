@@ -1,30 +1,44 @@
 import '@testing-library/jest-dom';
 
+type RequestInitType = {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string | null;
+};
+
+type ResponseInitType = {
+  status?: number;
+  statusText?: string;
+  headers?: Record<string, string>;
+};
+
+type LinkPropsType = React.ComponentProps<'a'> & { children?: React.ReactNode };
+
 // Mock Web API Request/Response for Next.js API routes
 if (typeof global.Request === 'undefined') {
   global.Request = class {
     constructor(
-      public url: any,
-      public init?: any,
+      public url: string,
+      public init?: RequestInitType,
     ) {}
-  } as any;
+  } as unknown as typeof Request;
 }
 
 if (typeof global.Response === 'undefined') {
   global.Response = class {
     constructor(
-      public body?: any,
-      public init?: any,
+      public body?: string | null,
+      public init?: ResponseInitType,
     ) {}
     
     async json() {
-      return JSON.parse(this.body || '{}');
+      return JSON.parse((this.body) || '{}');
     }
     
     async text() {
-      return this.body || '';
+      return (this.body) || '';
     }
-  } as any;
+  } as unknown as typeof Response;
 }
 
 // Mock src/i18n.ts to avoid next-intl routing issues
@@ -33,7 +47,7 @@ jest.mock('@/i18n', () => ({
     locales: ['de', 'en'],
     defaultLocale: 'de',
   },
-  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+  Link: ({ children, ...props }: LinkPropsType) => <a {...props}>{children}</a>,
   redirect: jest.fn(),
   usePathname: jest.fn(() => '/'),
   useRouter: jest.fn(() => ({
@@ -73,10 +87,10 @@ jest.mock('next-auth/react', () => ({
 // Suppress console errors in tests
 const originalError = console.error;
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === 'string' &&
-      args[0].includes('Warning: useLayoutEffect does nothing on the server')
+      (args[0] as string).includes('Warning: useLayoutEffect does nothing on the server')
     ) {
       return;
     }

@@ -3,15 +3,18 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WuInputGroup } from '../WuInputGroup';
 
+type MockInputProps = React.InputHTMLAttributes<HTMLInputElement> & { className?: string };
+type MockButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { className?: string };
+
 // Mock WuInput and WuButton components
 jest.mock('@/components/atoms/WuInput/WuInput', () => ({
-  WuInput: ({ className, ...props }: any) => (
+  WuInput: ({ className, ...props }: MockInputProps) => (
     <input className={className} {...props} />
   )
 }));
 
 jest.mock('@/components/atoms/WuButton/WuButton', () => ({
-  WuButton: ({ className, ...props }: any) => (
+  WuButton: ({ className, ...props }: MockButtonProps) => (
     <button className={className} {...props} />
   )
 }));

@@ -24,6 +24,7 @@ jest.mock('@/lib/email', () => ({
 
 describe('GET /api/user/email', () => {
   it('route handlers are exported', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const module = require('@/app/api/user/email/route');
     
     expect(module.GET || module.PUT || module.PATCH).toBeDefined();
@@ -32,6 +33,7 @@ describe('GET /api/user/email', () => {
 
 describe('PUT /api/user/email', () => {
   it('PUT handler is exported', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { PUT } = require('@/app/api/user/email/route');
     
     expect(PUT).toBeDefined();
@@ -40,6 +42,7 @@ describe('PUT /api/user/email', () => {
 
 describe('PATCH /api/user/email', () => {
   it('PATCH handler is exported', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { PATCH } = require('@/app/api/user/email/route');
     
     expect(PATCH).toBeDefined();

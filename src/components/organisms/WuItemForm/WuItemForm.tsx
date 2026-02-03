@@ -537,7 +537,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
               <WuCheckbox
                 className={styles.dataOption}
                 checked={selectedDataFields.has('title')}
-                onChange={(_checked, _event) => toggleFieldSelection('title')}
+                onChange={() => toggleFieldSelection('title')}
                 label={(
                   <span className={styles.dataOptionLabel}>
                     <span className={styles.dataOptionField}>{t("fieldTitle")}</span> {newParsedData.title}
@@ -549,7 +549,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
               <WuCheckbox
                 className={styles.dataOption}
                 checked={selectedDataFields.has('price')}
-                onChange={(_checked, _event) => toggleFieldSelection('price')}
+                onChange={() => toggleFieldSelection('price')}
                 label={(
                   <span className={styles.dataOptionLabel}>
                     <span className={styles.dataOptionField}>{t("fieldPrice")}</span> {newParsedData.price}
@@ -561,7 +561,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
               <WuCheckbox
                 className={styles.dataOption}
                 checked={selectedDataFields.has('currency')}
-                onChange={(_checked, _event) => toggleFieldSelection('currency')}
+                onChange={() => toggleFieldSelection('currency')}
                 label={(
                   <span className={styles.dataOptionLabel}>
                     <span className={styles.dataOptionField}>{t("fieldCurrency")}</span> {newParsedData.currency}
@@ -573,7 +573,7 @@ export function WuItemForm({ onSubmit, onCancel, initialValues, isEditMode = fal
               <WuCheckbox
                 className={styles.dataOption}
                 checked={selectedDataFields.has('image')}
-                onChange={(_checked, _event) => toggleFieldSelection('image')}
+                onChange={() => toggleFieldSelection('image')}
                 label={(
                   <span className={styles.dataOptionLabel}>
                     <span className={styles.dataOptionField}>{t("fieldImage")}</span>

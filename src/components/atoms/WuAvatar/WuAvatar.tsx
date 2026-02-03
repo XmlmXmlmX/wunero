@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { type WuAtom } from "@/types/WuAtom";
 import styles from "./WuAvatar.module.css";
 
@@ -25,7 +26,7 @@ export function WuAvatar({ src, alt = "Avatar", size = "md", fallbackText, class
   return (
     <div className={classes} {...rest}>
       {src ? (
-        <img src={src} alt={alt} className={styles.image} />
+        <Image src={src} alt={alt} fill className={styles.image} />
       ) : (
         <div className={styles.fallback}>{getInitials(fallbackText)}</div>
       )}

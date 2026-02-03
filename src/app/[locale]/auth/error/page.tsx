@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useTranslations } from "next-intl";
-import { WuButton } from "@/components/atoms/WuButton/WuButton";
 import styles from "./page.module.css";
 import { WuButtonLink } from "@/components/atoms";
 
@@ -13,7 +11,7 @@ function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
-  const message = error ? t(error as any, { defaultValue: t('default') }) : t('default');
+  const message = error ? t(error as unknown as string, { defaultValue: t('default') }) : t('default');
 
   return (
     <div className={styles.container}>

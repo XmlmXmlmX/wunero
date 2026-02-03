@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n";
 import { WuButton, WuInput, WuAvatar } from "@/components/atoms";
 import { WuPageHeader } from "@/components/organisms/WuPageHeader/WuPageHeader";
 import { getGravatarUrl } from "@/lib/gravatar";
@@ -20,7 +19,7 @@ interface UserProfile {
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
-  const { data: session, status, update } = useSession();
+  const { status, update } = useSession();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,7 +94,7 @@ export default function ProfilePage() {
         const data = await response.json();
         setProfileMessage({ type: "error", text: data.error || t("profileInfo.errorMessage") });
       }
-    } catch (error) {
+    } catch {
       setProfileMessage({ type: "error", text: t("profileInfo.errorMessage") });
     } finally {
       setSavingProfile(false);
@@ -134,7 +133,7 @@ export default function ProfilePage() {
         const data = await response.json();
         setPasswordMessage({ type: "error", text: data.error || t("password.errorMessage") });
       }
-    } catch (error) {
+    } catch {
       setPasswordMessage({ type: "error", text: t("password.errorMessage") });
     } finally {
       setChangingPassword(false);
@@ -155,7 +154,7 @@ export default function ProfilePage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         setEmailMessage({ type: "success", text: t("email.successMessage") });
         setNewEmail("");
         setEmailPassword("");
@@ -168,7 +167,7 @@ export default function ProfilePage() {
         const data = await response.json();
         setEmailMessage({ type: "error", text: data.error || t("email.errorMessage") });
       }
-    } catch (error) {
+    } catch {
       setEmailMessage({ type: "error", text: t("email.errorMessage") });
     } finally {
       setChangingEmail(false);

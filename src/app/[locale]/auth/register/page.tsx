@@ -26,7 +26,7 @@ function RegisterForm() {
     setIsLoading(true);
     setError(null);
 
-    const body: any = { email, password };
+    const body: Record<string, string | undefined> = { email, password };
     if (invitationCode) {
       body.invitation = invitationCode;
     }

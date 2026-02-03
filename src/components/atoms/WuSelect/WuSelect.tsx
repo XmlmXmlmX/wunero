@@ -41,7 +41,7 @@ export function WuSelect({
   );
   const selectedLabel = selectedOption?.props?.children || "Select an option";
 
-  const handleOptionClick = (optionValue: string | number, optionLabel: ReactNode) => {
+  const handleOptionClick = (optionValue: string | number) => {
     setSelectedValue(optionValue);
     setIsOpen(false);
 

@@ -508,7 +508,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
         )}
       </div>
     );
-  }, [members, wishlist?.title]);
+  }, [members, wishlist?.title, t]);
 
   if (loading) {
     return (

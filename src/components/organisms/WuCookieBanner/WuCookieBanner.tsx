@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { WuModal } from '@/components/molecules/WuModal/WuModal';
 import { WuButton, WuLanguageSwitcher } from '@/components/atoms';
@@ -16,22 +16,22 @@ import styles from './WuCookieBanner.module.css';
 
 const WuCookieBanner: React.FC = () => {
   const t = useTranslations('cookies');
-  const [isOpen, setIsOpen] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [consent, setConsentState] = useState(() => getDefaultConsent());
-  const [isClient, setIsClient] = useState(false);
-
-  // Initialize on client-side only to prevent hydration mismatch
-  useEffect(() => {
-    setIsClient(true);
+  const [isOpen, setIsOpen] = useState(() => {
+    // Initialize state on mount to prevent hydration mismatch
+    if (typeof window === 'undefined') return false;
     const stored = getConsent();
-    if (stored) {
-      setConsentState(stored);
-      setIsOpen(false);
-    } else {
-      setConsentState(getDefaultConsent());
-      setIsOpen(true);
-    }
+    return !stored;
+  });
+  const [showDetails, setShowDetails] = useState(false);
+  const [consent, setConsentState] = useState(() => {
+    if (typeof window === 'undefined') return getDefaultConsent();
+    const stored = getConsent();
+    return stored || getDefaultConsent();
+  });
+
+  // No-op, just for hydration purposes
+  useLayoutEffect(() => {
+    // This effect intentionally does nothing
   }, []);
 
   const handleAcceptAll = () => {

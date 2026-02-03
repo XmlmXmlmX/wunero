@@ -5,7 +5,7 @@ import { getShopName } from "@/lib/productParser";
 import { type WishItem, type WishItemImportance, type Currency } from "@/types";
 import { type WuMolecule } from "@/types/WuMolecule";
 import type { AnimatedIconHandle } from "@/components/ui/types";
-import { ChevronUpIcon, ChevronDownIcon, PenIcon, Trash, TrashIcon, HeartIcon, HeartOff, HeartPlus } from "lucide-react";
+import { ChevronUpIcon, ChevronDownIcon, PenIcon, TrashIcon, HeartIcon } from "lucide-react";
 import styles from "./WuItemCard.module.css";
 import ExternalLinkIcon from "@/components/ui/external-link-icon";
 import ShoppingCartIcon from "@/components/ui/shopping-cart-icon";

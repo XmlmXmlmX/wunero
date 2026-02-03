@@ -23,7 +23,7 @@ export type WuButtonLinkProps = WuAtom<HTMLAnchorElement, React.AnchorHTMLAttrib
   prefetch?: boolean;
 };
 
-export function WuButtonLink({ 
+function WuButtonLinkInner({ 
   children, 
   className, 
   href, 
@@ -36,14 +36,7 @@ export function WuButtonLink({
     .filter(Boolean)
     .join(" ");
 
-  // Try to use intl-aware Link, fallback to Next.js Link if no intl context
-  let locale: string | undefined;
-  try {
-    locale = useLocale();
-  } catch (e) {
-    // No intl context available
-  }
-
+  const locale = useLocale();
   const Link = locale ? IntlLink : NextLink;
 
   return (
@@ -51,4 +44,8 @@ export function WuButtonLink({
       {children}
     </Link>
   );
+}
+
+export function WuButtonLink(props: WuButtonLinkProps) {
+  return <WuButtonLinkInner {...props} />;
 }
