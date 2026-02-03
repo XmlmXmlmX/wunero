@@ -849,6 +849,7 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
                     isOwner={canEdit}
                     isFirst={index === 0}
                     isLast={index === items.length - 1}
+                                        isPublicWishlist={wishlist?.is_private === 0}
                     translations={{
                       purchased: tItem("purchased"),
                       mustHave: tItem("mustHave"),

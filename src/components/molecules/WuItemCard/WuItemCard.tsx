@@ -20,6 +20,7 @@ interface WuItemCardProps extends WuMolecule<HTMLDivElement> {
   isOwner?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
+    isPublicWishlist?: boolean;
   translations?: {
     purchased: string;
     mustHave: string;
@@ -109,6 +110,7 @@ export function WuItemCard({
   isOwner = true, 
   isFirst = false, 
   isLast = false,
+    isPublicWishlist = false,
   translations = defaultTranslations,
   className, 
   ...rest 
@@ -129,8 +131,8 @@ export function WuItemCard({
   const editIconRef = useRef<AnimatedIconHandle>(null);
 
   const showUrl = item.url && sanitizeUrl(item.url);
-  const partnerUrl = showUrl ? addAmazonPartnerTag(showUrl) : undefined;
-  const showAffiliateLabel = Boolean(partnerUrl && isAmazonAffiliateUrl(partnerUrl));
+  const partnerUrl = showUrl && isPublicWishlist ? addAmazonPartnerTag(showUrl) : showUrl;
+  const showAffiliateLabel = Boolean(partnerUrl && isPublicWishlist && isAmazonAffiliateUrl(partnerUrl));
   const showImage = item.image_url && isValidImageUrl(item.image_url);
   const purchasedQty = item.purchased_quantity || 0;
   const totalQty = item.quantity || 1;
