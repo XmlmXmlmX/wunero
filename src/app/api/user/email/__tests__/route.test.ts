@@ -25,9 +25,9 @@ jest.mock('@/lib/email', () => ({
 describe('GET /api/user/email', () => {
   it('route handlers are exported', () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const module = require('@/app/api/user/email/route');
+    const routeModule = require('@/app/api/user/email/route');
     
-    expect(module.GET || module.PUT || module.PATCH).toBeDefined();
+    expect(routeModule.GET || routeModule.PUT || routeModule.PATCH).toBeDefined();
   });
 });
 
