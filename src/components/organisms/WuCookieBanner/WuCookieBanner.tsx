@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { WuModal } from '@/components/molecules/WuModal/WuModal';
 import { WuButton, WuLanguageSwitcher } from '@/components/atoms';
@@ -16,6 +16,7 @@ import styles from './WuCookieBanner.module.css';
 
 const WuCookieBanner: React.FC = () => {
   const t = useTranslations('cookies');
+  const [isClient, setIsClient] = useState(false);
   const [isOpen, setIsOpen] = useState(() => {
     // Initialize state on mount to prevent hydration mismatch
     if (typeof window === 'undefined') return false;
@@ -29,9 +30,9 @@ const WuCookieBanner: React.FC = () => {
     return stored || getDefaultConsent();
   });
 
-  // No-op, just for hydration purposes
-  useLayoutEffect(() => {
-    // This effect intentionally does nothing
+  // Track client-side rendering to avoid hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
   }, []);
 
   const handleAcceptAll = () => {

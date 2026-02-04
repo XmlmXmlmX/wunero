@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { WuButton, WuButtonLink, WuInput, WuTextArea, WuSegmentControl, WuSpinner } from "@/components/atoms";
 import { WuAvatar } from "@/components/atoms/WuAvatar/WuAvatar";
 import { WuEmptyState } from "@/components/molecules/WuEmptyState/WuEmptyState";
+import { WuModal } from "@/components/molecules/WuModal/WuModal";
 import { WuItemCard } from "@/components/molecules/WuItemCard/WuItemCard";
 import { WuItemForm } from "@/components/organisms/WuItemForm/WuItemForm";
 import { WuImportAmazonWishlistForm } from "@/components/organisms/WuImportAmazonWishlistForm/WuImportAmazonWishlistForm";
@@ -539,93 +540,101 @@ export default function WishlistDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <div className={styles.section}>
-          {isEditMode ? (
-            <div className={styles.editForm}>
-              <WuInput
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Wishlist title"
-              />
-              <WuTextArea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Wishlist description"
-              />
-              {isOwner && (
-                <div className={styles.membersSection}>
-                  <h3 className={styles.membersTitle}>Members</h3>
-                  <div className={styles.membersAddRow}>
-                    <WuInput
-                      value={memberEmail}
-                      onChange={(e) => setMemberEmail(e.target.value)}
-                      placeholder="Add member by email"
-                      type="email"
-                      fullWidth
-                    />
-                    <WuButton type="button" variant="primary" onClick={addMember} disabled={!memberEmail.trim()}>
-                      Add
-                    </WuButton>
-                  </div>
-                  {memberError && <p className={styles.memberError}>{memberError}</p>}
-                  {membersLoading ? (
-                    <div className={styles.memberHint}><WuSpinner size="sm" /></div>
-                  ) : (
-                    <ul className={styles.membersList}>
-                      {members.length === 0 && <li className={styles.memberHint}>No members yet.</li>}
-                      {members.map((member) => {
-                        const isPending = member.is_pending === true;
-                        return (
-                          <li key={member.id} className={`${styles.memberItem} ${isPending ? styles.memberItemPending : ''}`}>
-                            <div className={styles.memberInfo}>
-                              <WuAvatar 
-                                src={member.avatar_url}
-                                alt={member.name || member.email}
-                                fallbackText={member.name || member.email}
-                                size="md"
-                              />
-                              <div>
-                                <div className={styles.memberName}>
-                                  {member.name || member.email}
-                                  {isPending && <span className={styles.memberPendingBadge}> • Invitation pending</span>}
-                                </div>
-                                {member.name && <div className={styles.memberEmail}>{member.email}</div>}
-                              </div>
-                            </div>
-                            <div className={styles.memberActions}>
-                              {isPending && (
-                                <WuButton 
-                                  type="button" 
-                                  variant="outline" 
-                                  onClick={() => resendInvitation(member.email)}
-                                  disabled={resendingInvitation === member.email}
-                                >
-                                  {resendingInvitation === member.email ? "Resending..." : "Resend"}
-                                </WuButton>
-                              )}
-                              {member.id !== wishlist.user_id && (
-                                <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
-                                  Remove
-                                </WuButton>
-                              )}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+        <WuModal
+          isOpen={isEditMode}
+          title={t("editTitle")}
+          onClose={cancelEdit}
+          actions={
+            <>
+              <WuButton type="button" variant="primary" onClick={saveEdit}>
+                {t("save")}
+              </WuButton>
+              <WuButton type="button" variant="outline" onClick={cancelEdit}>
+                {t("cancel")}
+              </WuButton>
+            </>
+          }
+        >
+          <div className={styles.editForm}>
+            <WuInput
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              placeholder={t("titlePlaceholder")}
+            />
+            <WuTextArea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder={t("descriptionPlaceholder")}
+            />
+            {isOwner && (
+              <div className={styles.membersSection}>
+                <h3 className={styles.membersTitle}>{t("membersTitle")}</h3>
+                <div className={styles.membersAddRow}>
+                  <WuInput
+                    value={memberEmail}
+                    onChange={(e) => setMemberEmail(e.target.value)}
+                    placeholder={t("addMemberPlaceholder")}
+                    type="email"
+                    fullWidth
+                  />
+                  <WuButton type="button" variant="primary" onClick={addMember} disabled={!memberEmail.trim()}>
+                    {t("addMember")}
+                  </WuButton>
                 </div>
-              )}
-              <div className={styles.editActions}>
-                <WuButton type="button" variant="primary" onClick={saveEdit}>
-                  Save
-                </WuButton>
-                <WuButton type="button" variant="outline" onClick={cancelEdit}>
-                  Cancel
-                </WuButton>
+                {memberError && <p className={styles.memberError}>{memberError}</p>}
+                {membersLoading ? (
+                  <div className={styles.memberHint}><WuSpinner size="sm" /></div>
+                ) : (
+                  <ul className={styles.membersList}>
+                    {members.length === 0 && <li className={styles.memberHint}>{t("noMembers")}</li>}
+                    {members.map((member) => {
+                      const isPending = member.is_pending === true;
+                      return (
+                        <li key={member.id} className={`${styles.memberItem} ${isPending ? styles.memberItemPending : ''}`}>
+                          <div className={styles.memberInfo}>
+                            <WuAvatar 
+                              src={member.avatar_url}
+                              alt={member.name || member.email}
+                              fallbackText={member.name || member.email}
+                              size="md"
+                            />
+                            <div>
+                              <div className={styles.memberName}>
+                                {member.name || member.email}
+                                {isPending && <span className={styles.memberPendingBadge}> • {t("invitationPending")}</span>}
+                              </div>
+                              {member.name && <div className={styles.memberEmail}>{member.email}</div>}
+                            </div>
+                          </div>
+                          <div className={styles.memberActions}>
+                            {isPending && (
+                              <WuButton 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => resendInvitation(member.email)}
+                                disabled={resendingInvitation === member.email}
+                              >
+                                {resendingInvitation === member.email ? t("resending") : t("resend")}
+                              </WuButton>
+                            )}
+                            {member.id !== wishlist.user_id && (
+                              <WuButton type="button" variant="outline" onClick={() => removeMember(member.id)}>
+                                {t("removeMember")}
+                              </WuButton>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
-            </div>
-          ) : isInviteMode ? (
+            )}
+          </div>
+        </WuModal>
+
+        <div className={styles.section}>
+          {isInviteMode ? (
             <div className={styles.editForm}>
               {isOwner && (
                 <div className={styles.membersSection}>
