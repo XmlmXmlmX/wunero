@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import React, { useState, useSyncExternalStore } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { WuModal } from '@/components/molecules/WuModal/WuModal';
 import { WuButton, WuLanguageSwitcher } from '@/components/atoms';
 import { WuSwitch } from '@/components/atoms';
@@ -14,9 +15,17 @@ import {
 } from '@/lib/cookies';
 import styles from './WuCookieBanner.module.css';
 
+const useIsClient = () =>
+  useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
 const WuCookieBanner: React.FC = () => {
   const t = useTranslations('cookies');
-  const [isClient, setIsClient] = useState(false);
+  const locale = useLocale();
+  const isClient = useIsClient();
   const [isOpen, setIsOpen] = useState(() => {
     // Initialize state on mount to prevent hydration mismatch
     if (typeof window === 'undefined') return false;
@@ -29,11 +38,6 @@ const WuCookieBanner: React.FC = () => {
     const stored = getConsent();
     return stored || getDefaultConsent();
   });
-
-  // Track client-side rendering to avoid hydration mismatch
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleAcceptAll = () => {
     acceptAll();
@@ -105,9 +109,9 @@ const WuCookieBanner: React.FC = () => {
 
             <p className={styles.privacyLink}>
               {t('privacyLinkText')}{' '}
-              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer">
+              <Link href={`/${locale}/legal/privacy`} target="_blank" rel="noopener noreferrer">
                 {t('privacyLink')}
-              </a>
+              </Link>
             </p>
           </>
         ) : (
